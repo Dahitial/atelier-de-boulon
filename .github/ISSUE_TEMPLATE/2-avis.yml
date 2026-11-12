@@ -1,0 +1,29 @@
+name: Donner son avis ou proposer une idée
+description: Ce que l'enfant a aimé ou pas, une leçon à ajouter, un retour d'utilisation en classe…
+title: "[Avis] "
+labels: ["avis"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci ! Ce que vous écrivez ici est **public** :
+        n'indiquez ni le nom ni aucune information personnelle de l'enfant.
+  - type: dropdown
+    id: qui
+    attributes:
+      label: Vous êtes…
+      options: ["Parent", "Enseignant ou enseignante", "Autre"]
+    validations:
+      required: true
+  - type: dropdown
+    id: niveau
+    attributes:
+      label: Quelle classe ?
+      options: ["CP", "CE2", "Les deux", "Une autre classe (à préciser plus bas)"]
+  - type: textarea
+    id: avis
+    attributes:
+      label: Votre avis ou votre idée
+      description: Ce qui a plu, ce qui a ennuyé ou bloqué l'enfant, ce que vous aimeriez voir dans le jeu.
+    validations:
+      required: true
