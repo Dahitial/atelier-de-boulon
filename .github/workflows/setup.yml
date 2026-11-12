@@ -1,0 +1,63 @@
+name: Construire un Setup
+
+on:
+  workflow_dispatch:
+    inputs:
+      niveau:
+        description: "Niveau (ce2 ou cp)"
+        required: true
+        default: "cp"
+        type: choice
+        options: [cp, ce2]
+      version:
+        description: "Numéro de version (ex. 0.2.0)"
+        required: true
+        default: "0.2.0"
+
+permissions:
+  contents: read
+
+jobs:
+  setup:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Construire le Setup
+        shell: pwsh
+        run: >
+          ./installateur/construire_setup.ps1
+          -Niveau "${{ inputs.niveau }}"
+          -Version "${{ inputs.version }}"
+
+      - name: Garder le Setup non signé
+        id: televerse
+        uses: actions/upload-artifact@v4
+        with:
+          name: setup-${{ inputs.niveau }}-${{ inputs.version }}
+          path: |
+            installateur/Setup/*.exe
+            installateur/Setup/*.zip
+
+      # Signature (quand SignPath Foundation aura accepté le projet) :
+      # remplacer les valeurs ci-dessous par celles données par SignPath,
+      # et ajouter le secret SIGNPATH_API_TOKEN dans les réglages du dépôt.
+      #
+      # - name: Signer avec SignPath
+      #   uses: signpath/github-action-submit-signing-request@v1
+      #   with:
+      #     api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+      #     organization-id: "<organization-id>"
+      #     project-slug: "atelier-de-boulon"
+      #     signing-policy-slug: "release-signing"
+      #     github-artifact-id: ${{ steps.televerse.outputs.artifact-id }}
+      #     wait-for-completion: true
+      #     output-artifact-directory: signe
+      #
+      # - uses: actions/upload-artifact@v4
+      #   with:
+      #     name: setup-${{ inputs.niveau }}-${{ inputs.version }}-signe
+      #     path: signe
