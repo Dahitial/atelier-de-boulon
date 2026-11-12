@@ -1,0 +1,157 @@
+/* Site de présentation de L'Atelier de Boulon (GitHub Pages) — mêmes couleurs et polices que le jeu */
+@font-face { font-family: "Andika"; font-weight: 400; font-display: swap; src: url("../moteur/polices/andika-400.woff2") format("woff2"); }
+@font-face { font-family: "Andika"; font-weight: 700; font-display: swap; src: url("../moteur/polices/andika-700.woff2") format("woff2"); }
+@font-face { font-family: "Fredoka"; font-weight: 300 700; font-display: swap; src: url("../moteur/polices/fredoka-variable.woff2") format("woff2"); }
+
+:root {
+  --ink: #2b2236;
+  --paper: #fff8ea;
+  --wall: #2f6f73;
+  --wall-dark: #23565a;
+  --wood: #c98a3c;
+  --wood-dark: #8a5a24;
+  --yellow: #f6c445;
+  --shadow: 0 6px 0 rgba(43, 34, 54, .35);
+  --titre: "Fredoka", "Trebuchet MS", sans-serif;
+  --texte: "Andika", "Trebuchet MS", "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: var(--texte); font-size: 18px; line-height: 1.5;
+}
+img, svg { max-width: 100%; }
+a { color: var(--wall-dark); }
+a:hover { color: var(--ink); }
+:focus-visible { outline: 4px solid var(--yellow); outline-offset: 3px; border-radius: 6px; }
+h1, h2, h3 { font-family: var(--titre); line-height: 1.1; margin: 0; }
+p, ul, ol { margin: 0; }
+
+.contenu { max-width: 1160px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }
+.aller-contenu { position: absolute; left: -9999px; }
+.aller-contenu:focus { left: 16px; top: 16px; z-index: 10; background: var(--yellow); color: var(--ink); padding: 8px 16px; border-radius: 10px; }
+
+/* ---------- En-tête ---------- */
+.entete { background: var(--wall-dark); border-bottom: 4px solid var(--ink); }
+.entete .contenu {
+  padding-top: 14px; padding-bottom: 14px;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px;
+}
+.logo { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--paper); }
+.logo:hover { color: var(--paper); }
+.logo span { font-family: var(--titre); font-weight: 700; font-size: 26px; }
+.menu { display: flex; flex-wrap: wrap; gap: 4px 22px; font-weight: 700; font-size: 17px; }
+.menu a, .pied a { color: var(--paper); }
+.menu a:hover, .pied a:hover { color: var(--yellow); }
+
+/* ---------- Boutons ---------- */
+.bouton {
+  display: inline-flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 28px;
+  background: var(--yellow); color: var(--ink); border: 3px solid var(--ink); border-radius: 18px;
+  box-shadow: 0 6px 0 rgba(43, 34, 54, .45);
+  font-family: var(--titre); font-weight: 600; font-size: 22px; text-decoration: none;
+  transition: transform .08s, box-shadow .08s;
+}
+.bouton:hover { color: var(--ink); transform: translateY(-2px); box-shadow: 0 8px 0 rgba(43, 34, 54, .45); }
+.bouton:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(43, 34, 54, .45); }
+.bouton.clair { background: var(--paper); }
+.bouton.petit { min-height: 48px; padding: 0 22px; font-size: 19px; border-radius: 14px; box-shadow: none; }
+.bouton.petit:hover { box-shadow: none; }
+.bouton small { font-family: var(--texte); font-weight: 400; font-size: 16px; }
+.boutons { display: flex; flex-wrap: wrap; gap: 16px; }
+
+/* ---------- Accueil ---------- */
+.accueil {
+  background: var(--wall); color: var(--paper);
+  border-bottom: 18px solid var(--wood); box-shadow: inset 0 -6px 0 var(--wood-dark);
+}
+.accueil .contenu { padding-top: 64px; padding-bottom: 56px; display: flex; flex-wrap: wrap; align-items: center; gap: 40px; }
+.accueil-texte { flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 22px; }
+.surtitre { font-weight: 700; color: var(--yellow); letter-spacing: .02em; }
+.accueil h1 { font-weight: 700; font-size: clamp(38px, 6vw, 58px); line-height: 1.05; }
+.accueil-intro { font-size: 21px; max-width: 34em; }
+.accueil .boutons { margin-top: 6px; }
+.accueil-note { font-size: 16px; color: #d9efe9; }
+.accueil-boulon { flex: 1 1 260px; display: flex; justify-content: center; }
+.accueil-boulon svg { width: 300px; height: auto; }
+.accueil-boulon .bras { transform-origin: 120px 96px; animation: coucou 2.4s ease-in-out infinite; }
+@keyframes coucou { 0%, 60%, 100% { transform: rotate(0); } 70%, 90% { transform: rotate(-14deg); } 80% { transform: rotate(8deg); } }
+@media (prefers-reduced-motion: reduce) { .accueil-boulon .bras { animation: none; } html { scroll-behavior: auto; } }
+
+/* ---------- Sections ---------- */
+.section { padding-top: 72px; padding-bottom: 24px; display: flex; flex-direction: column; gap: 32px; }
+.section > h2, .section-titre h2 { font-weight: 700; font-size: clamp(30px, 4.5vw, 40px); text-align: center; }
+.section-titre { display: flex; flex-direction: column; gap: 8px; align-items: center; text-align: center; }
+.section-titre p { font-size: 19px; max-width: 36em; }
+
+/* Classes */
+.classes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 28px; }
+.classe {
+  background: #fff; border: 3px solid var(--ink); border-radius: 26px; box-shadow: var(--shadow);
+  padding: 28px; display: flex; flex-direction: column; gap: 16px;
+}
+.classe-haut { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.classe h3 { font-weight: 700; font-size: 44px; }
+.classe.cp h3 { color: #c2401a; }
+.classe.ce2 h3 { color: #1f6fbf; }
+.pastille { border: 2px solid var(--ink); border-radius: 999px; padding: 2px 14px; font-weight: 700; font-size: 15px; }
+.classe.cp .pastille { background: #fde3a3; }
+.classe.ce2 .pastille { background: #cdeccf; }
+.classe > p { font-size: 19px; }
+.classe ul { padding-left: 22px; display: flex; flex-direction: column; gap: 6px; }
+.classe .boutons { gap: 12px; margin-top: auto; padding-top: 8px; }
+
+/* Captures */
+.captures { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 28px; }
+.captures figure { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.captures img {
+  display: block; width: 100%; height: auto; aspect-ratio: 4 / 3;
+  border: 3px solid var(--ink); border-radius: 18px; box-shadow: var(--shadow); background: var(--wall);
+}
+.captures figcaption { font-size: 16px; }
+.captures figcaption b { font-family: var(--titre); font-weight: 600; font-size: 18px; }
+
+/* Autour des leçons */
+.jeux { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 20px; }
+.jeu { background: #fff; border: 3px solid var(--ink); border-radius: 20px; padding: 20px; display: flex; gap: 14px; align-items: flex-start; }
+.jeu-icone {
+  flex: none; width: 52px; height: 52px; border-radius: 14px; border: 3px solid var(--ink);
+  display: flex; align-items: center; justify-content: center;
+}
+.jeu-icone svg { width: 28px; height: 28px; fill: none; stroke: var(--ink); stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+.jeu h3 { font-weight: 600; font-size: 21px; margin-bottom: 4px; }
+.jeu p { font-size: 16px; }
+
+/* Parents */
+.parents {
+  background: var(--wall-dark); color: var(--paper); border: 3px solid var(--ink); border-radius: 28px;
+  padding: 40px clamp(20px, 4vw, 36px); display: flex; flex-direction: column; gap: 28px;
+}
+.parents h2 { font-weight: 700; font-size: clamp(28px, 4vw, 38px); }
+.parents-colonnes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 28px 40px; }
+.parents-colonnes > div { display: flex; flex-direction: column; gap: 10px; }
+.parents h3 { font-weight: 600; font-size: 24px; color: var(--yellow); }
+.parents ul { padding-left: 22px; display: flex; flex-direction: column; gap: 6px; }
+.parents a { color: var(--paper); font-weight: 700; }
+.parents a:hover { color: var(--yellow); }
+
+/* Installer */
+.installer { padding-bottom: 72px; }
+.installer .boutons { justify-content: center; }
+.etapes { padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 20px; }
+.etapes li { background: #fff; border: 3px solid var(--ink); border-radius: 20px; padding: 22px; display: flex; flex-direction: column; gap: 8px; }
+.etapes .numero {
+  width: 40px; height: 40px; border-radius: 50%; background: var(--wall); color: var(--paper);
+  font-family: var(--titre); font-weight: 700; font-size: 22px; display: flex; align-items: center; justify-content: center;
+}
+.etapes strong { font-size: 19px; }
+.etapes span { font-size: 16px; }
+.etapes img { margin-top: 6px; display: block; width: 100%; height: auto; border-radius: 12px; border: 2px solid var(--ink); }
+.installer-note { text-align: center; font-size: 16px; max-width: 46em; margin: 0 auto; }
+
+/* ---------- Pied de page ---------- */
+.pied { background: var(--ink); color: var(--paper); }
+.pied .contenu { padding-top: 32px; padding-bottom: 32px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px 32px; font-size: 16px; }
+.pied nav { display: flex; flex-wrap: wrap; gap: 6px 22px; }

@@ -14,6 +14,7 @@ Le contexte est marocain : villes, fêtes, dirhams.
 
 ## Jouer
 
+- **En ligne**, sans rien installer : **https://dahitial.github.io/atelier-de-boulon/**
 - **Installer** : un Setup par niveau, dans les [versions publiées](../../releases).
 - **Sans installer** : double-clic sur `niveaux/ce2/Lancer.bat` ou `niveaux/cp/Lancer.bat`
   (ou ouvrir `index.html` dans Edge).
