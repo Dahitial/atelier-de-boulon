@@ -1,0 +1,86 @@
+/* L'Atelier de Boulon — CP : style de la direction A (« le petit atelier »).
+   Police Andika pour tout ce que l'enfant lit (a et g comme à l'école), Fredoka pour les titres.
+   Les deux polices sont fournies avec le jeu (moteur/polices/, déclarées dans moteur/css/style.css). */
+
+:root {
+  --title-font: "Fredoka", "Segoe Print", "Comic Sans MS", cursive;
+  --body-font: "Andika", "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+  --lire: #e4572e;
+  --dictee: #8e6cc9;
+  --monde: #3fa34d;
+  --sciences: #d4691e;
+  --temps: #2e6fd6;
+}
+
+/* ---------- Bulle de Boulon : plus grande, toujours avec « réécouter » ---------- */
+.bubble { font-size: 25px; font-weight: 700; line-height: 1.2; max-width: 700px; border-radius: 34px; padding: 12px 12px 12px 24px; }
+.bubble.fixe { min-height: 76px; }
+
+/* ---------- Sommaire : 6 matières, peu de chapitres, gros boutons ---------- */
+.tab { font-size: 26px; padding: 8px 22px; }
+.tab.lire { background: var(--lire); }
+.tab.dictee { background: var(--dictee); }
+.tab.monde { background: var(--monde); }
+.tab.sciences { background: var(--sciences); }
+.tab.temps { background: var(--temps); }
+.chapters { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }   /* tous les chapitres sur une rangée, sur toute la hauteur */
+.chapter h3 { font-size: 22px; }
+.lesson-btn { font-size: 22px; padding: 10px 12px; border-width: 3px; border-radius: 16px; }
+.lesson-btn .stars { font-size: 20px; }
+
+/* ---------- Leçon ---------- */
+.lesson-card { font-size: 28px; }
+.lesson-card h2 { font-size: 36px; }
+
+/* ---------- Séance d'exercices ---------- */
+.exo-top { background: #3d8b86; border-bottom: 4px solid var(--ink); height: 92px; }
+.exo-top .title { color: #fff8ea; }
+.exo-progress { flex: none; gap: 14px; margin-left: auto; margin-right: auto; }
+.exo-progress span { flex: none; width: 40px; height: 40px; border-width: 3px; border-radius: 50%; background: rgba(255,248,234,.55); }
+.exo-progress span.cur { width: 48px; height: 48px; background: var(--yellow); box-shadow: none; border-width: 4px; }
+.exo-progress span.ok, .exo-progress span.half { background: var(--green); }
+.exo-progress span.ko { background: #f3a08a; }
+.exo-box { top: 106px; }
+.consigne { font-family: var(--body-font); font-size: 30px; align-items: center; gap: 18px; }
+.consigne .speak {
+  width: 96px; height: 96px; font-size: 44px;
+  background: var(--yellow); border: 4px solid var(--ink); box-shadow: 0 6px 0 rgba(43,34,54,.35);
+}
+.choice { font-size: 60px; min-width: 170px; min-height: 120px; border-width: 4px; border-radius: 26px; }
+.choices { gap: 30px; }
+.choice.img { font-size: 104px; min-width: 230px; min-height: 220px; padding: 14px 18px; border-width: 4px; justify-content: center; }
+.choice.img small { font-size: 22px; }
+.cp-collection { display: inline-block; max-width: 760px; font-size: 64px; line-height: 1.25; letter-spacing: 6px; word-break: break-all; }
+.feedback { font-size: 32px; border-radius: 40px; padding: 14px 30px; }
+
+/* le défi de Zigzag : des boutons de chapitre avec une image, qui tiennent dans 4 colonnes */
+.lesson-btn.avec-picto { font-size: 13px; padding: 5px 6px; line-height: 1.1; text-align: left; justify-content: flex-start !important; gap: 6px; hyphens: auto; }
+.lesson-btn.avec-picto .defi-picto svg { width: 34px; height: 34px; }
+.lesson-btn.avec-picto > span:last-child { display: none; }   /* le compte des victoires : pas utile à lire au CP */
+
+/* les jours de la semaine (Le temps) : un mot à la place d'une image */
+.choice.img.jour { font-family: var(--body-font); font-size: 34px; font-weight: 700; min-width: 210px; min-height: 120px; }
+
+/* six matières : les onglets restent sur une ligne */
+.screen-header .tabs .tab { white-space: nowrap; font-size: 17px; padding: 8px 10px; }
+
+/* phase 3 : lire ce qu'on entend (lettres, syllabes, mots, nombres) */
+.choice.ecrit { font-family: var(--body-font); font-size: 52px; font-weight: 700; min-width: 170px; min-height: 120px; padding: 10px 24px; background: #fff; }
+.choice.ecrit.right, .choice.ecrit.wrong { color: #fff; }
+/* les petits problèmes : deux groupes et un « + », ou la maison du 5 */
+.prompt .groupes { display: flex; align-items: center; justify-content: center; gap: 22px; }
+.prompt .groupes .plus { font-family: var(--title-font); font-size: 56px; font-weight: 700; color: #1f5fa0; }
+.prompt .groupes .boite { padding: 8px; border: 3px dashed #c9b993; border-radius: 16px; background: #fff; line-height: 0; }
+.prompt .des { display: flex; justify-content: center; }
+/* les nombres à cliquer dans un exercice en images : pas besoin de la grande carte carrée */
+.choice.img.nombre { min-width: 140px; min-height: 0; padding: 12px 22px; }
+
+/* période 2 : la phrase à lire, et les étiquettes de mots (dictée de phrases) */
+.phrase-a-lire { align-self: center; font-family: var(--body-font); font-size: 56px; font-weight: 700; padding: 6px 30px; background: #fff; border: 4px solid var(--ink); border-radius: 22px; }
+.exo-box .cases .case-vide { min-width: 70px; }
+.etiquette-unite.mot, .case-vide.mot { font-size: 34px; }
+.choice.img.crayon { min-width: 0; min-height: 0; padding: 6px 10px; }
+.exo-box .choices:has(.crayon) { flex-direction: column; align-items: center; gap: 12px; }
+/* la dictée de phrases : beaucoup d'étiquettes de mots, en plus petit */
+.exo-box .cases:has(.case-vide:nth-child(5)) .case-vide { font-size: 30px; min-width: 60px; padding: 0 10px; height: 68px; }
+.exo-box .etiquettes-reserve:has(.etiquette-unite:nth-child(7)) .etiquette-unite { font-size: 30px; }

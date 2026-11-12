@@ -1,0 +1,32 @@
+# Environnements Python (recréables, ~2,2 Go)
+.venv*/
+__pycache__/
+*.pyc
+
+# Modèles téléchargés et échantillons de comparaison (régénérables)
+outils-voix/modeles/
+outils-voix/echantillons/
+
+# Journaux et état de la génération de voix
+outils-voix/generation*.log
+outils-voix/generation.pid
+outils-voix/envoi_voix.log
+outils-voix/superviseur.log
+outils-voix/deuxieme_passe.log
+outils-geo/formes_ids.json
+niveaux/*/audio/boulon/*.tmp.ogg
+niveaux/*/audio/voix.js.tmp
+
+# Programme d'installation compilé et journaux de construction
+installateur/Setup/
+niveaux/*/video/
+installateur/reconstruction.log
+installateur/niveau-courant.iss
+
+# Réglages locaux de l'outil de développement
+.claude/
+
+# Système
+Thumbs.db
+Desktop.ini
+.DS_Store

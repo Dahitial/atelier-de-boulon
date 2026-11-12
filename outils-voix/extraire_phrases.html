@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Extraction des phrases de Boulon</title></head>
+<body>
+<pre id="out">attente</pre>
+<!-- charge le jeu sans le démarrer, pour lister tout ce que Boulon peut dire -->
+<script>window.VOICE_FILES = {};</script>
+<!-- niveau à extraire : extraire_phrases.html?niveau=ce2 (ce2 par défaut) -->
+<script>
+  window.NE_PAS_DEMARRER = true;
+  const NIVEAU_EXTRAIT = (new URLSearchParams(location.search).get("niveau") || "ce2").replace(/[^a-z0-9-]/g, "");
+  document.write('<script src="../niveaux/' + NIVEAU_EXTRAIT + '/niveau.js" charset="utf-8"><\/script>');
+</script>
+<script src="../modules/liste.js" charset="utf-8"></script>
+<script src="../moteur/charger.js" charset="utf-8"></script>
+<script>
+Store.load();
+const items = new Map();   // clé -> { key, text, prio }
+function add(text, prio) {
+  const clean = Voice.clean(text);
+  const key = Voice.key(text);
+  if (!key || key.split(" ").length < 2) return;        // mots isolés : laissés à la voix d'Edge
+  if (!items.has(key)) items.set(key, { key, text: clean, prio });
+  else items.get(key).prio = Math.min(items.get(key).prio, prio);
+}
+
+/* 1. encouragements et retours (les plus entendus) */
+Messages.good.concat(Messages.retry, Messages.wrong).forEach((t) => add(t, 1));
+Messages.end.forEach(([, arr]) => arr.forEach((t) => add(t, 1)));
+["Réponds d'abord !", "Utilise tous les mots !"].forEach((t) => add(t, 1));
+
+/* 2. phrases fixes de Boulon dans les écrans */
+[
+  "Ma voix est activée !",
+  "Coucou ! Voici ma nouvelle voix. On apprend en s'amusant ?",
+  "Est-ce que cette vitesse te convient ?",
+  "Super ! Je suis Boulon, et j'adore apprendre avec toi. Prêt pour une nouvelle aventure ?",
+  "Clique sur ton personnage, ou crée un nouvel élève.",
+  "Crée ton personnage pour commencer !",
+  "La lampe est allumée ! Passe ta souris sur les objets : je t'explique à quoi ils servent. Reclique sur la lampe pour l'éteindre.",
+  "J'ai éteint la lampe. Clique sur un objet pour l'utiliser !",
+  "Que veux-tu faire maintenant ?", "Clique sur un objet de l'atelier !", "Besoin d'aide ? Allume la lampe.",
+  "Tape ton calcul avec la souris ou le clavier. Je te lis le résultat !",
+  "Choisis un verbe et un temps. La terminaison est en rouge !",
+  "Pas encore, regarde bien les aiguilles.",
+  "Bravo ! Tu as battu Zigzag et tu gagnes une boîte de pièces !", "Bravo, tu as battu Zigzag !",
+  "Égalité ! Essaie encore pour le battre.", "Zigzag a gagné cette fois. Revois les leçons et prends ta revanche !",
+  "Bravo, tout est juste !",
+  "Ce jeu est fermé. Bats Zigzag deux fois sur le même chapitre pour l'ouvrir !",
+  "Choisis un jeu ! Le jeu de construction s'ouvre quand tu bats Zigzag.",
+  "C'est l'heure de la révision ! On revoit ce qui était difficile, juste au bon moment.",
+  "Bienvenue dans mon coffre aux trésors ! Gagne des écrous en travaillant, puis décore l'atelier et habille-moi !",
+  "C'est l'heure d'une pause ! Tu as bien travaillé aujourd'hui. Va te dégourdir les jambes, et reviens demain !",
+  "Bravo, c'est l'heure de la pause ! L'atelier se repose jusqu'à demain. À bientôt !",
+  "Bienvenue au laboratoire ! Choisis une expérience : on observe, on essaie, et on comprend.",
+  "Bienvenue sur la frise du temps ! Clique sur une image pour découvrir un savant, une construction ou une découverte.",
+  "Rien à réviser aujourd'hui ! Ta mémoire est en pleine forme.",
+  "Fais d'abord quelques leçons dans le cahier. Je te proposerai ensuite de les réviser au bon moment.",
+].forEach((t) => add(t, 2));
+svgEl(Art.atelier()).querySelectorAll("[data-desc]").forEach((g) => add(g.dataset.desc, 2));
+
+/* 3. consignes des exercices (on tire les banques plusieurs fois pour voir toutes les variantes) */
+for (const m of ["MAD", "EUR"]) {
+  Store.data.settings.monnaie = m;
+  for (const l of Object.values(LESSONS)) {
+    /* les consignes avec des nombres tirés au hasard (années, températures…) restent à la voix d'Edge */
+    for (let i = 0; i < 150; i++) l.bank().forEach((q) => { if (!/\d/.test(q.consigne)) add(q.consigne, 3); });
+  }
+}
+
+/* 4. géographie et micro */
+Object.values(GEO_TEXTES).forEach((t) => add(t, 4));
+[GEO_TEXTES.jourNuit + " " + GEO_TEXTES.jourNuit2, GEO_TEXTES.solaire + " " + GEO_TEXTES.attention + " "].forEach((t) => add(t, 4));
+Object.values(GEO_CONTINENTS).forEach((c) => { add(`${c.nom}. ${c.desc}`, 4); add(`Clique sur ${c.art}${c.nom}.`, 4); });
+GEO_MERS.forEach((m) => add(`${m.nom}. ${m.fait}`, 4));
+["Glisse chaque capitale sur son pays.", "Quelle éclipse vois-tu sur ce dessin ?", "Mission réussie avec trois étoiles ! Bravo, grand explorateur !",
+ "Pendant une éclipse solaire, qui passe entre le Soleil et la Terre ?", "Pendant une éclipse lunaire, quelle ombre recouvre la Lune ?",
+ "La ville est dans la partie éclairée par le Soleil : c'est le jour.",
+ "La ville est dans la partie sombre : le Soleil éclaire l'autre côté de la Terre, c'est la nuit."].forEach((t) => add(t, 4));
+READ_ALOUD.forEach((t) => add(t, 4));
+
+/* 5. leçons lues à voix haute (les plus longues, générées en dernier) */
+for (const m of ["MAD", "EUR"]) {          // les leçons de monnaie existent en dirhams et en euros
+  Store.data.settings.monnaie = m;
+  for (const l of Object.values(LESSONS)) add(lessonSpeech(l), m === "MAD" ? 5 : 6);
+}
+
+const list = [...items.values()].sort((a, b) => a.prio - b.prio || a.text.length - b.text.length);
+document.getElementById("out").textContent = JSON.stringify(list);
+document.title = "OK " + list.length;
+</script>
+</body></html>

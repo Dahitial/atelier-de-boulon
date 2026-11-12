@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L'Atelier de Boulon — CE2</title>
+</head>
+<body>
+<div id="viewport">
+  <div id="stage" aria-live="polite"></div>
+</div>
+<noscript>Ce jeu a besoin de JavaScript. Ouvre-le avec Microsoft Edge ou Google Chrome.</noscript>
+<!-- voix enregistrée de Boulon (générée par outils-voix/generer_voix.py ; absente = voix d'Edge) -->
+<script src="audio/voix.js" charset="utf-8" onerror="window.VOICE_FILES = {}"></script>
+<!-- la fiche du niveau, la liste des modules, puis le chargeur du moteur commun -->
+<script src="niveau.js" charset="utf-8"></script>
+<script src="../../modules/liste.js" charset="utf-8"></script>
+<script src="../../moteur/charger.js" charset="utf-8"></script>
+</body>
+</html>

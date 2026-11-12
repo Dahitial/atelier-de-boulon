@@ -1,0 +1,9 @@
+{
+  "classe": "CP",
+  "titre": "L'Atelier de Boulon — CP",
+  "description": "Jeu éducatif pour apprendre à lire, écrire et compter au CP.",
+  "raccourci": "Lire, écrire et compter au CP avec Boulon le robot",
+  "appGuid": "00625B8A-2A6A-40C8-85D0-DB5979FBBAE1",
+  "dossier": "Atelier de Boulon CP",
+  "_note": "appGuid et dossier ne doivent plus changer une fois le jeu distribué : ils permettent de le mettre à jour."
+}

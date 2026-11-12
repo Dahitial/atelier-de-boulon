@@ -1,0 +1,20 @@
+{{TITRE_MAJ}}
+{{DESCRIPTION}}
+
+INSTALLER
+1. Double-clique sur "{{EXE}}".
+2. Si Windows affiche "Windows a protégé votre ordinateur" :
+   clique sur "Informations complémentaires", puis sur "Exécuter quand même".
+   (Ce message apparaît parce que le jeu est fait maison et n'est pas signé.)
+3. Clique sur "Suivant" jusqu'à "Installer". Aucun mot de passe administrateur n'est demandé.
+
+JOUER
+- Double-clique sur l'icône "{{TITRE}}" du Bureau
+  (ou cherche "Atelier de Boulon" dans le menu Démarrer).
+- Le jeu s'ouvre dans une fenêtre Microsoft Edge. Il marche sans Internet.
+- Chaque enfant crée son personnage : ses notes sont gardées sur l'ordinateur.
+
+DÉSINSTALLER
+Paramètres > Applications > Applications installées > "{{TITRE}}" > Désinstaller.
+
+Configuration : Windows 10 ou 11, avec Microsoft Edge (déjà présent sur Windows 11).

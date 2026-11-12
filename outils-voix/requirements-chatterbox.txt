@@ -1,0 +1,3 @@
+# Python 3.11 — génération de la voix enregistrée de Boulon (processeur)
+chatterbox-tts
+soundfile

@@ -1,0 +1,111 @@
+/* L'Atelier de Boulon — module Géographie (même charte que style.css) */
+
+.geo-hub { position: absolute; left: 40px; right: 40px; top: 96px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.geo-card, .geo-mission-card { font: inherit; color: var(--ink); text-align: center; cursor: pointer; padding: 14px 16px; transition: transform .12s; }
+.geo-card:hover, .geo-mission-card:hover { transform: translateY(-4px) rotate(-1deg); }
+.geo-card .gi, .geo-mission-card .gi { font-size: 58px; line-height: 1.1; }
+.geo-card h3, .geo-mission-card h3 { font-family: var(--title-font); font-size: 22px; margin: 4px 0; }
+.geo-card p, .geo-mission-card p { margin: 0; font-size: 16px; }
+.geo-card-extra { margin-top: 6px !important; font-weight: 700; color: var(--good); }
+.geo-missions { position: absolute; left: 40px; right: 40px; top: 96px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+
+/* ---------- carte ---------- */
+.geo-mapbox { position: absolute; left: 18px; top: 80px; width: 690px; height: 600px; }
+.geo-map { position: absolute; inset: 0; border: 4px solid var(--ink); border-radius: 22px; overflow: hidden; background: #1e5f9c; box-shadow: 0 8px 0 rgba(0,0,0,.25); touch-action: none; }
+.geo-map svg { width: 100%; height: 100%; display: block; cursor: grab; }
+.geo-map.dragging svg { cursor: grabbing; }
+.geo-zoom { position: absolute; right: 12px; bottom: 12px; display: flex; flex-direction: column; gap: 8px; z-index: 3; }
+.geo-zoom .btn.round { width: 48px; height: 48px; font-size: 24px; }
+.geo-toggles { position: absolute; left: 12px; top: 12px; display: flex; gap: 8px; z-index: 3; }
+.geo-hover { position: absolute; left: 12px; bottom: 12px; z-index: 3; background: rgba(255,255,255,.92); border: 2px solid var(--ink); border-radius: 12px; padding: 2px 10px; font-weight: 700; font-size: 16px; pointer-events: none; }
+.geo-hover:empty { display: none; }
+
+.cty { stroke: rgba(255,255,255,.85); stroke-width: .8px; cursor: pointer; transition: opacity .25s, filter .2s; }
+.cty.hov { filter: brightness(1.18) saturate(1.2); stroke: #fff; stroke-width: 2px; }
+.cty.dim { opacity: .28; }
+.cty.sel { stroke: #fff; stroke-width: 3px; animation: geoPulse .9s ease-in-out infinite alternate; }
+.cty.ok { fill: #3fa34d !important; stroke: #fff; stroke-width: 1.5px; }
+@keyframes geoPulse { from { filter: brightness(1.05); } to { filter: brightness(1.45) drop-shadow(0 0 6px #fff); } }
+.geo-labels text { fill: var(--ink); stroke: rgba(255,255,255,.9); paint-order: stroke; font-family: var(--body-font); font-weight: 700; }
+.geo-seas text { fill: rgba(255,255,255,.85); font-style: italic; font-family: var(--title-font); pointer-events: none; }
+.geo-seas text.ocean { font-weight: 700; letter-spacing: 1px; }
+.cap { fill: #e4572e; stroke: #fff; cursor: pointer; }
+.cap:hover, .cap.on { fill: #f6c445; stroke: var(--ink); }
+.geo-ping { fill: none; stroke-width: 4px; animation: geoPing 1.2s ease-out forwards; transform-box: fill-box; transform-origin: center; }
+@keyframes geoPing { from { transform: scale(.5); opacity: 1; } to { transform: scale(9); opacity: 0; } }
+.geo-tag { fill: #fff; stroke: var(--ink); paint-order: stroke; font-family: var(--title-font); font-weight: 700; }
+.geo-dot { fill: #f6c445; stroke: var(--ink); stroke-width: 2px; vector-effect: non-scaling-stroke; }
+.geo-dot.pulse { animation: geoBlink 1s ease-in-out infinite alternate; }
+@keyframes geoBlink { to { fill: #e4572e; } }
+.geo-link { stroke: #fff; stroke-width: 2.5px; stroke-dasharray: 6 4; }
+
+/* ---------- panneau latéral et fiche pays ---------- */
+.geo-side { position: absolute; left: 722px; right: 18px; top: 80px; height: 670px; padding: 14px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+.geo-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.geo-chip { font: 700 14px var(--body-font); color: var(--ink); border: 2px solid var(--ink); border-radius: 12px; padding: 6px 4px; cursor: pointer; box-shadow: 0 3px 0 rgba(0,0,0,.2); }
+.geo-chip.on { outline: 3px solid var(--ink); outline-offset: 1px; transform: translateY(1px); }
+.geo-hint { font-size: 15px; margin: 0; line-height: 1.35; }
+.geo-cont-title { font-family: var(--title-font); font-weight: 700; font-size: 22px; text-align: center; border: 3px solid var(--ink); border-radius: 14px; padding: 4px; }
+.geo-list { flex: 1; overflow: auto; display: flex; flex-direction: column; gap: 5px; padding-right: 4px; }
+.geo-item { display: flex; align-items: center; gap: 8px; font: 700 15px var(--body-font); color: var(--ink); background: #fff; border: 2px solid var(--ink); border-radius: 10px; padding: 4px 8px; cursor: pointer; text-align: left; }
+.geo-item:hover { background: #fff3c4; }
+.geo-item img { height: 20px; width: 27px; flex: none; border: 1px solid rgba(0,0,0,.3); border-radius: 2px; }
+.geo-item.vu::after { content: "\2713"; margin-left: auto; color: var(--good); }
+.geo-fiche { display: flex; flex-direction: column; gap: 8px; overflow: auto; flex: 1; }
+.geo-fiche-flag { text-align: center; }
+.geo-flag { border: 2px solid var(--ink); border-radius: 6px; box-shadow: 0 4px 0 rgba(0,0,0,.2); background: #fff; vertical-align: middle; }
+.geo-fiche h3 { font-family: var(--title-font); font-size: 28px; margin: 0; text-align: center; line-height: 1.1; }
+.geo-tagline { text-align: center; font-size: 14px; font-style: italic; }
+.geo-row { display: flex; justify-content: space-between; align-items: center; font-size: 17px; border-bottom: 2px dashed rgba(43,34,54,.15); padding-bottom: 4px; gap: 8px; }
+.geo-row b { text-align: right; }
+.geo-pill { display: inline-block; border: 2px solid var(--ink); border-radius: 10px; padding: 1px 8px; font-weight: 700; }
+.geo-facts p { margin: 0 0 6px; font-size: 16px; line-height: 1.35; background: rgba(246,196,69,.25); border-radius: 10px; padding: 6px 8px; }
+.geo-fiche-actions { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.geo-status { font-size: 17px; line-height: 1.4; }
+.geo-capinfo { font-size: 16px; min-height: 60px; }
+
+/* ---------- jour et nuit ---------- */
+.geo-schema { width: 100%; height: auto; background: #1b1f45; border: 3px solid var(--ink); border-radius: 16px; }
+.geo-clock { font-size: 17px; text-align: center; }
+.geo-cities { position: absolute; left: 100px; right: 18px; top: 524px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.geo-city { display: flex; flex-direction: column; align-items: center; background: #fff8ea; border: 3px solid var(--ink); border-radius: 14px; padding: 4px; transition: background .6s, color .6s; }
+.geo-city .ic { font-size: 28px; line-height: 1.1; }
+.geo-city b { font-size: 15px; }
+.geo-city small { font-size: 13px; }
+.geo-city.night { background: #23285a; color: #fff; }
+.geo-citydot .halo { fill: rgba(255,226,122,0); transition: fill .6s; }
+.geo-citydot .core { fill: #fff; stroke: var(--ink); stroke-width: 2px; vector-effect: non-scaling-stroke; }
+.geo-citydot.night .halo { fill: rgba(255,226,122,.75); }
+.geo-citydot.night .core { fill: #ffe27a; }
+
+/* ---------- éclipses ---------- */
+.geo-tabs { position: absolute; left: 100px; top: 78px; }
+.geo-tabs .tab { font-size: 19px; padding: 6px 18px; }
+.geo-eclipse-box { position: absolute; left: 18px; right: 18px; top: 116px; }
+.geo-eclipse { width: 100%; height: auto; display: block; border: 4px solid var(--ink); border-radius: 20px; }
+.ec-lab { fill: #fff; font-family: var(--title-font); font-weight: 700; font-size: 18px; }
+.ec-note { fill: rgba(255,255,255,.6); font-size: 13px; font-style: italic; }
+.geo-eclipse-actions { position: absolute; left: 100px; right: 18px; top: 612px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.geo-eclipse-actions .btn { font-size: 18px; padding: 6px 14px; }
+.geo-caption { position: absolute; left: 100px; right: 18px; top: 672px; background: #fff8ea; border: 3px solid var(--ink); border-radius: 14px; padding: 6px 12px; font-size: 16px; text-align: center; }
+
+/* ---------- missions ---------- */
+.geo-mtop { position: absolute; left: 100px; right: 18px; top: 80px; display: flex; gap: 14px; align-items: center; }
+.geo-points { font-family: var(--title-font); font-weight: 700; font-size: 22px; color: #fff; text-shadow: 2px 2px 0 var(--ink); white-space: nowrap; }
+.geo-prompt { position: absolute; left: 18px; right: 18px; top: 120px; min-height: 64px; background: #fff8ea; border: 3px solid var(--ink); border-radius: 16px; padding: 8px 14px; font-size: 22px; text-align: center; z-index: 4; }
+.geo-prompt small { font-size: 16px; }
+.geo-choices { margin-top: 8px; }
+.geo-choices .choice { font-size: 22px; padding: 6px 18px; }
+.geo-marea { position: absolute; left: 18px; right: 18px; top: 200px; bottom: 96px; }
+.geo-fb { position: absolute; left: 100px; right: 18px; bottom: 22px; z-index: 6; font-family: var(--title-font); font-weight: 700; font-size: 19px; padding: 8px 16px; border: 3px solid var(--ink); border-radius: 16px; background: #fff; text-align: center; animation: pop .25s cubic-bezier(.3,1.6,.6,1); }
+.geo-fb.good { background: #d8f5d2; }
+.geo-fb.bad { background: #ffe0d6; }
+.geo-dz { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.geo-zone { display: flex; flex-direction: column; align-items: center; gap: 6px; background: #fff; border: 3px dashed var(--ink); border-radius: 16px; padding: 12px 6px; text-align: center; font-size: 18px; transition: background .2s, transform .2s; }
+.geo-zone .slot { min-width: 130px; min-height: 34px; border: 2px solid rgba(43,34,54,.25); border-radius: 10px; padding: 3px 8px; font-weight: 700; color: rgba(43,34,54,.4); }
+.geo-zone.over { background: #fff3c4; transform: scale(1.04); }
+.geo-zone.done { border-style: solid; background: #d8f5d2; }
+.geo-zone.done .slot { color: var(--good); border-color: var(--good); }
+.geo-tiles { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 28px; }
+.geo-tile { font: 700 22px var(--body-font); background: var(--yellow); border: 3px solid var(--ink); border-radius: 14px; padding: 10px 18px; cursor: grab; box-shadow: 0 5px 0 rgba(0,0,0,.25); touch-action: none; user-select: none; position: relative; z-index: 5; }
+.geo-tile.dragging { cursor: grabbing; z-index: 50; box-shadow: 0 12px 18px rgba(0,0,0,.3); }

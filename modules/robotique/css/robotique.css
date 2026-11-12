@@ -1,0 +1,91 @@
+/* L'Atelier de Boulon — module « L'atelier de Rivet » (maquette validée, repère 1024 × 768) */
+
+.robo-ecran { background: #5d7391; }
+.robo-mur { position: absolute; inset: 0; background: linear-gradient(#5d7391, #52677f); }
+.robo-mur::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(circle, rgba(255,255,255,.12) 3px, transparent 4px); background-size: 64px 64px; }
+.robo-sol { position: absolute; left: 0; right: 0; bottom: 0; height: 150px; background: #3f4c5f; border-top: 4px solid var(--ink); }
+.robo-tete { left: 24px; right: 24px; top: 14px; height: 56px; display: flex; align-items: center; gap: 12px; }
+.robo-tete .title { margin: 0; font-size: 32px; color: var(--paper); text-shadow: 0 3px 0 var(--ink), 2px 0 0 var(--ink), -2px 0 0 var(--ink), 0 -2px 0 var(--ink); }
+.robo-tete-rivet { display: flex; }
+.robo-badge { margin-left: auto; padding: 6px 14px; background: var(--paper); border: 3px solid var(--ink); border-radius: 14px; font-weight: 700; font-size: 17px; }
+
+/* le hub */
+.robo-rivet-grand { left: 40px; top: 250px; }
+.robo-bulle { left: 34px; top: 96px; width: 280px; background: #fff; border: 3px solid var(--ink); border-radius: 26px; padding: 12px 18px; font-weight: 700; font-size: 21px; line-height: 1.25; }
+.robo-missions { left: 330px; right: 24px; top: 90px; bottom: 170px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; padding: 16px; }
+.robo-mission { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: #fff; border: 3px solid var(--ink); border-radius: 18px;
+  cursor: pointer; font-family: var(--body-font); color: var(--ink); padding: 8px; }
+.robo-mission:hover:not(.ferme):not(.info) { background: #fff3c4; transform: translateY(-2px); }
+.robo-mission b { font-family: var(--title-font); font-size: 20px; text-align: center; line-height: 1.1; }
+.robo-mission-ic { font-size: 40px; line-height: 1; font-weight: 700; }
+.robo-mission.ferme { opacity: .55; cursor: default; }
+.robo-mission.info { background: #eaf6df; cursor: default; text-align: center; font-size: 15px; }
+.robo-cadenas { position: absolute; right: 10px; top: 8px; font-size: 20px; }
+.robo-et { font-size: 22px; letter-spacing: 2px; color: #d8cdb6; }
+.robo-et .on { color: #e0a100; }
+.robo-et.grand { font-size: 50px; line-height: 1; }
+
+/* la grille */
+.robo-grille { left: 40px; top: 92px; display: grid; gap: 4px; padding: 10px; background: #2f3a4a; border: 4px solid var(--ink); border-radius: 18px; }
+.robo-case { position: relative; background: #e9e2cf; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.robo-case.caillou { background: #c9bfa6; }
+.robo-case.mur-d { box-shadow: inset -7px 0 0 var(--ink); }
+.robo-case.mur-b { box-shadow: inset 0 -7px 0 var(--ink); }
+.robo-case.mur-d.mur-b { box-shadow: inset -7px 0 0 var(--ink), inset 0 -7px 0 var(--ink); }
+.robo-rivet { position: absolute; z-index: 2; pointer-events: none; transition: left .32s ease, top .32s ease, transform .32s ease; }
+.robo-rivet svg { display: block; }
+.robo-rivet.bip { animation: robo-bip .45s; }
+@keyframes robo-bip { 0%, 100% { translate: 0; } 25% { translate: -6px 0; } 75% { translate: 6px 0; } }
+@media (prefers-reduced-motion: reduce) { .robo-rivet { transition: none; } .robo-rivet.bip { animation: none; } }
+
+/* le panneau de programme */
+.robo-panneau { left: 556px; right: 24px; top: 92px; height: 494px; box-sizing: border-box; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.robo-consigne { margin: 0; display: flex; gap: 10px; align-items: flex-start; font-size: 17px; font-weight: 700; line-height: 1.3; }
+.niveau-cp .robo-consigne { font-size: 19px; }
+.robo-ecoute { flex: none; width: 38px; height: 38px; border-radius: 50%; border: 3px solid var(--ink); background: var(--yellow); color: var(--ink); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+.robo-sous { margin: 2px 0 0; font-family: var(--title-font); font-size: 18px; }
+.robo-fente { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.robo-slot { height: 58px; border: 3px dashed #c9b993; border-radius: 12px; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
+  font-size: 28px; font-weight: 700; color: var(--ink); font-family: var(--body-font); padding: 0; line-height: 1; }
+.robo-slot.plein { border-style: solid; border-color: var(--ink); background: #eaf6df; }
+.robo-slot.boucle { background: #f8d3b0; }
+.robo-slot.actif { background: var(--yellow); }
+.robo-slot.faux { background: #f8c8bd; }
+.robo-slot small { font-size: 10px; margin-top: 2px; }
+.robo-palette { display: flex; gap: 8px; flex-wrap: wrap; }
+.robo-cmd { min-width: 64px; height: 58px; padding: 0 10px; border: 3px solid var(--ink); border-radius: 14px; background: var(--sky); font-size: 30px; font-weight: 700; cursor: pointer; color: var(--ink);
+  font-family: var(--body-font); box-shadow: 0 4px 0 rgba(43,34,54,.35); }
+.robo-cmd.mot { font-size: 17px; background: #bfe6f7; }
+.robo-cmd.rep { font-size: 17px; background: #f3b27a; }
+.robo-cmd:hover { transform: translateY(-2px); }
+.robo-aide { margin: 0; font-size: 14px; }
+.robo-actions { margin-top: auto; display: flex; gap: 10px; }
+.robo-go { flex: 1; height: 62px; border: 3px solid var(--ink); border-radius: 18px; background: var(--green); font-family: var(--title-font); font-size: 28px; font-weight: 700; cursor: pointer; color: var(--ink); box-shadow: 0 5px 0 rgba(43,34,54,.35); }
+.robo-efface { height: 62px; padding: 0 14px; border: 3px solid var(--ink); border-radius: 18px; background: #fff; font-family: var(--body-font); font-size: 17px; font-weight: 700; cursor: pointer; color: var(--ink); }
+/* les flèches du CP, en croix */
+.robo-pave { display: grid; grid-template-columns: repeat(3, 96px); grid-template-rows: repeat(3, 96px); gap: 8px; justify-content: center; margin-top: 10px;
+  grid-template-areas: ". haut ." "gauche . droite" ". bas ."; }
+.robo-pave .fleche { width: 96px; height: 96px; font-size: 48px; }
+.robo-pave .haut { grid-area: haut; } .robo-pave .bas { grid-area: bas; } .robo-pave .gauche { grid-area: gauche; } .robo-pave .droite { grid-area: droite; }
+.robo-compteur { margin: 6px 0 0; text-align: center; font-weight: 700; font-size: 22px; }
+.robo-bravo { left: 262px; top: 600px; width: 500px; padding: 12px 18px; display: flex; align-items: center; gap: 14px; z-index: 30; }
+.robo-bravo b { font-family: var(--title-font); font-size: 22px; flex: 1; }
+.robo-bravo .robo-et.grand { font-size: 34px; }
+
+/* code une image */
+.robo-pix { left: 40px; top: 96px; display: grid; grid-template-columns: repeat(8, 46px); gap: 3px; padding: 8px; background: #2f3a4a; border: 4px solid var(--ink); border-radius: 16px; }
+.robo-pix button { width: 46px; height: 46px; border: 0; border-radius: 6px; background: #fff; cursor: pointer; padding: 0; }
+.robo-pix button.on { background: var(--ink); }
+.robo-codes { left: 470px; right: 24px; top: 92px; height: 470px; box-sizing: border-box; padding: 12px 16px; display: flex; flex-direction: column; gap: 5px; }
+.robo-ligne { display: flex; gap: 6px; align-items: center; height: 49px; font-weight: 700; }
+.robo-ligne > b { width: 22px; }
+.robo-ligne span { display: inline-flex; padding: 2px 7px; border-radius: 10px; border: 2px solid var(--ink); white-space: nowrap; font-size: 17px; }
+.robo-ligne .b { background: #fff; }
+.robo-ligne .n { background: var(--ink); color: #fff; }
+.robo-ligne.ok::after { content: "✔"; color: #3fa34d; font-size: 22px; margin-left: 4px; }
+.robo-pix-aide { left: 40px; top: 520px; width: 400px; margin: 0; color: var(--paper); font-weight: 700; font-size: 17px; }
+
+/* la fin d'une mission */
+.robo-fin { left: 212px; top: 110px; width: 600px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.robo-fin .title { margin: 0; font-size: 34px; }
+.robo-fin p { margin: 0; font-size: 19px; font-weight: 700; }

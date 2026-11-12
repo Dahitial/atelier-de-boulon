@@ -1,0 +1,3 @@
+# Python 3.12 — échantillons de comparaison (edge-tts, Piper)
+edge-tts
+piper-tts

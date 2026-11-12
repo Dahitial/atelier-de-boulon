@@ -1,0 +1,9 @@
+{
+  "classe": "CE2",
+  "titre": "L'Atelier de Boulon — CE2",
+  "description": "Jeu éducatif de français et de mathématiques pour le CE2.",
+  "raccourci": "Français et maths CE2 avec Boulon le robot",
+  "appGuid": "8C7A3F2E-5B1D-4E9A-9C3F-2A7D6B1E4F80",
+  "dossier": "Atelier de Boulon",
+  "_note": "appGuid et dossier ne doivent plus changer : ils permettent de mettre à jour le jeu déjà installé. Chaque nouveau niveau reçoit son propre appGuid et son propre dossier."
+}
