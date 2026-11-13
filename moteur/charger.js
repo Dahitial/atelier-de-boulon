@@ -8,8 +8,13 @@
    (utilisé par les outils, ex. outils-voix/extraire_phrases.html). */
 (function () {
   "use strict";
-  const ici = document.currentScript.src;                       // …/moteur/charger.js
+  const ici = document.currentScript.src;                       // …/moteur/charger.js?v=…
   const racine = ici.slice(0, ici.lastIndexOf("/moteur/") + 1);
+  /* numéro de version (« ?v=… », posé par outils-site/marquer_version.js à chaque publication) :
+     on le recopie sur chaque fichier chargé. Sur le site, le navigateur garde les fichiers 10 minutes ;
+     avec un nouveau numéro, il reprend toute la nouvelle version d'un coup, sans mélange ancien/nouveau. */
+  const v = (ici.match(/[?&]v=([\w.-]+)/) || [])[1];
+  const ver = (u) => (v ? u + "?v=" + v : u);
   const dossierNiveau = racine + "niveaux/" + NIVEAU.id + "/";
   const dossierModule = (id) => racine + "modules/" + id + "/";
 
@@ -33,8 +38,8 @@
   );
 
   const attr = (s) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
-  let html = styles.map((s) => `<link rel="stylesheet" href="${attr(s)}">`).join("");
-  html += scripts.map((s) => `<script src="${attr(s)}" charset="utf-8"><\/script>`).join("");
+  let html = styles.map((s) => `<link rel="stylesheet" href="${attr(ver(s))}">`).join("");
+  html += scripts.map((s) => `<script src="${attr(ver(s))}" charset="utf-8"><\/script>`).join("");
   if (!window.NE_PAS_DEMARRER) html += "<script>App.start();<\/script>";
   document.write(html);
 })();

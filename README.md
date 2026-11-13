@@ -65,6 +65,13 @@ Le code, les textes, les dessins et les sons originaux du jeu sont publiés sous
 
 Les éléments repris d'autres projets gardent leur propre licence (voir *Crédits*).
 
+## Publier une mise à jour du site
+
+GitHub Pages dit au navigateur de garder chaque fichier 10 minutes. Avant chaque publication, lancer
+`node outils-site/marquer_version.js` : il pose un nouveau numéro (« ?v=… ») dans les pages d'entrée,
+et `moteur/charger.js` le recopie sur tous les fichiers du jeu. Le navigateur reprend alors toute la
+nouvelle version d'un coup (au plus 10 minutes après), sans mélanger anciens et nouveaux fichiers.
+
 ## Crédits
 
 - Voix enregistrée : [Chatterbox](https://github.com/resemble-ai/chatterbox) (Resemble AI, licence MIT).
