@@ -192,10 +192,13 @@ Le jeu de memory existe déjà dans la borne de jeux (moteur commun) : il n'a pa
 
 ## À venir
 
-- **Périodes 3 à 5** en français et en maths (les sons p, t, b, d, ch, ou, on, an…, les nombres
-  jusqu'à 100, la monnaie en dirhams).
-- **Les sons isolés [l], [r]** : à enregistrer avec une vraie voix (a, i, o, u, é, è, « mmm » et « sss »
-  sont déjà de vrais sons : `audio/sons/`, voir `outils-voix/LISEZ-MOI.md`).
+- **Période 3** (janvier-février) : les sons an/en, in, oi, gn, k (c, qu), g ; les nombres jusqu'à
+  60 et les dizaines ; l'addition en ligne.
+- **Période 4** (mars-avril) : les sons eu, è/ai/ei, ill, z (s entre deux voyelles), ph ; les
+  nombres jusqu'à 100 ; la soustraction ; la monnaie en dirhams.
+- **Période 5** (mai-juin) : les sons plus rares (oin, ien, tion…) ; lire de petits textes ; les
+  problèmes ; l'heure et la mesure.
+- (Contenu des périodes 3 à 5 à valider, en suivant si possible le programme marocain.)
 - **La voix enregistrée** : lancer les outils de voix avec `-Niveau cp`.
 
 ## Fichiers

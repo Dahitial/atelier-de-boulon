@@ -71,16 +71,18 @@ for (const m of ["MAD", "EUR"]) {
   }
 }
 
-/* 4. géographie et micro */
-Object.values(GEO_TEXTES).forEach((t) => add(t, 4));
-[GEO_TEXTES.jourNuit + " " + GEO_TEXTES.jourNuit2, GEO_TEXTES.solaire + " " + GEO_TEXTES.attention + " "].forEach((t) => add(t, 4));
-Object.values(GEO_CONTINENTS).forEach((c) => { add(`${c.nom}. ${c.desc}`, 4); add(`Clique sur ${c.art}${c.nom}.`, 4); });
-GEO_MERS.forEach((m) => add(`${m.nom}. ${m.fait}`, 4));
-["Glisse chaque capitale sur son pays.", "Quelle éclipse vois-tu sur ce dessin ?", "Mission réussie avec trois étoiles ! Bravo, grand explorateur !",
- "Pendant une éclipse solaire, qui passe entre le Soleil et la Terre ?", "Pendant une éclipse lunaire, quelle ombre recouvre la Lune ?",
- "La ville est dans la partie éclairée par le Soleil : c'est le jour.",
- "La ville est dans la partie sombre : le Soleil éclaire l'autre côté de la Terre, c'est la nuit."].forEach((t) => add(t, 4));
-READ_ALOUD.forEach((t) => add(t, 4));
+/* 4. géographie et micro (modules du CE2 : absents au CP) */
+if (typeof GEO_TEXTES !== "undefined") {
+  Object.values(GEO_TEXTES).forEach((t) => add(t, 4));
+  [GEO_TEXTES.jourNuit + " " + GEO_TEXTES.jourNuit2, GEO_TEXTES.solaire + " " + GEO_TEXTES.attention + " "].forEach((t) => add(t, 4));
+  Object.values(GEO_CONTINENTS).forEach((c) => { add(`${c.nom}. ${c.desc}`, 4); add(`Clique sur ${c.art}${c.nom}.`, 4); });
+  GEO_MERS.forEach((m) => add(`${m.nom}. ${m.fait}`, 4));
+  ["Glisse chaque capitale sur son pays.", "Quelle éclipse vois-tu sur ce dessin ?", "Mission réussie avec trois étoiles ! Bravo, grand explorateur !",
+   "Pendant une éclipse solaire, qui passe entre le Soleil et la Terre ?", "Pendant une éclipse lunaire, quelle ombre recouvre la Lune ?",
+   "La ville est dans la partie éclairée par le Soleil : c'est le jour.",
+   "La ville est dans la partie sombre : le Soleil éclaire l'autre côté de la Terre, c'est la nuit."].forEach((t) => add(t, 4));
+}
+if (typeof READ_ALOUD !== "undefined") READ_ALOUD.forEach((t) => add(t, 4));
 
 /* 5. leçons lues à voix haute (les plus longues, générées en dernier) */
 for (const m of ["MAD", "EUR"]) {          // les leçons de monnaie existent en dirhams et en euros

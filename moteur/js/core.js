@@ -287,8 +287,9 @@ const Voice = {
   isNatural(v) { return !!v && /natural|google/i.test(v.name); },
   isMale(v) { return /Henri|Remy|Rémy|Paul|Antoine|Jean|Thierry|Gerard|Fabrice|Claude/i.test(v.name); },
   init() {
-    // les sons tenus sont courts : on les charge d'avance, sinon le premier arrive avec du retard
-    if (typeof NIVEAU !== "undefined" && NIVEAU.sons) this._prets = Object.values(NIVEAU.sons).map((f) => { const a = new Audio(); a.preload = "auto"; a.src = f; return a; });
+    // les sons et les lettres sont courts : on les charge d'avance, sinon le premier arrive avec du retard
+    if (typeof NIVEAU !== "undefined" && (NIVEAU.sons || NIVEAU.lettres))
+      this._prets = Object.values({ ...NIVEAU.sons, ...NIVEAU.lettres }).map((f) => { const a = new Audio(); a.preload = "auto"; a.src = f; return a; });
     if (!("speechSynthesis" in window)) return;
     this.refresh();
     speechSynthesis.addEventListener?.("voiceschanged", () => this.refresh());
@@ -323,24 +324,45 @@ const Voice = {
     const files = window.VOICE_FILES || {};
     return files[this.key(text)] || null;
   },
-  /* Les « sons tenus » (NIVEAU.sons : voyelles, « mmm », « sss »…) : la voix de synthèse les dit mal
-     (« mmm » devient « èm, èm, èm »). Un texte comme « La lettre m se dit la bouche fermée : « mmm »,
-     comme au début de moto. » est donc coupé en morceaux : la voix dit le texte, le jeu joue le vrai son.
-     Sont reconnus : [a], « i », « mmm » (une lettre répétée), un son dit tout seul (« u »), et une lettre
-     accentuée isolée dans la phrase (« La lettre é… » : la voix dirait « hé »). Un « a » isolé reste à la
-     voix : c'est souvent le verbe (« il a »).
-     Rend [{ texte }] ou [{ texte }, { son: fichier }, …] ; sans son reconnu, le texte d'origine tel quel. */
+  /* La voix de synthèse dit mal une lettre ou un son tout seul (« mmm » devient « èm, èm, èm », « é » devient
+     « hé »). Le niveau peut donc fournir de vrais enregistrements :
+       NIVEAU.sons    : le SON (« a », « ou », « mmm », « pe »…), joué pour [p], « mmm », « le son « i » »,
+                        ou un son dit tout seul (la dictée « Écoute le son » : « u ») ;
+       NIVEAU.lettres : le NOM de la lettre (« pé », « èl »…), joué pour une lettre seule dans la phrase :
+                        « La lettre p fait… », « l et a font la », « m + a → ma ».
+     La phrase est coupée en morceaux : la voix dit le texte, le jeu joue l'enregistrement entre deux.
+     Restent à la voix : « a » quand c'est le verbe (« Zigzag a gagné », « il y a »), « y », « à », et une lettre
+     après un nombre (« 8 h », « 3 m »).
+     Rend [{ texte }] ou [{ texte }, { son: fichier }, …] ; sans rien de reconnu, le texte d'origine tel quel. */
   morceaux(text) {
-    const sons = (typeof NIVEAU !== "undefined" && NIVEAU.sons) || null;
-    if (!sons) return [{ texte: text }];
-    const cle = (x) => { x = x.trim().toLowerCase(); if (/^(.)\1+$/u.test(x)) x = x[0]; return sons[x] || null; };
+    const N = typeof NIVEAU !== "undefined" ? NIVEAU : {};
+    if (!N.sons && !N.lettres) return [{ texte: text }];
+    const sons = N.sons || {}, lettres = N.lettres || {};
+    const unSon = (x) => {
+      x = x.trim().toLowerCase();
+      if (/^(.)\1+$/u.test(x)) x = x[0];                  // « mmm » → m
+      else if (/^chh+$/.test(x)) x = "ch";                // « chhh » → ch
+      return sons[x] || null;
+    };
     const brut = String(text).replace(/<[^>]+>/g, "");
     const seul = brut.trim().replace(/[.!?…]+$/, "");
-    if (seul.length <= 4 && cle(seul)) return [{ son: cle(seul) }];
+    if (seul.length <= 4 && unSon(seul)) return [{ son: unSon(seul) }];
+    /* une lettre seule : son nom (é, è : le son, c'est pareil) ; « a » seulement si c'est bien la lettre */
+    const uneLettre = (l, i) => {
+      l = l.toLowerCase();
+      if (l === "y") return null;                         // « il y a », « tu y es »
+      if (l === "a") {
+        const avant = brut.slice(0, i).trimEnd(), apres = brut.slice(i + 1).trimStart();
+        const lettre = /(?:\blettres?|\bet|[+,:«(])$/iu.test(avant) || /^(?:[,+→);.]|$|et\b|font\b)/u.test(apres);
+        if (!lettre) return null;
+      }
+      return lettres[l] || sons[l] || null;
+    };
     const parts = [];
     let debut = 0;
-    for (const m of brut.matchAll(/\[([^\]\s]{1,4})\]|«\s*([^»\s]{1,4})\s*»|(?<!\p{L})([^\P{L}a-zA-Z])(?!\p{L})/gu)) {
-      const f = cle(m[1] || m[2] || m[3]);
+    const motif = /\[([^\]\s]{1,4})\]|«\s*([^»\s]{1,4})\s*»|(?<![\p{L}\p{N}'’-])(?<!\d[\s ])(\p{L})(?![\p{L}\p{N}'’-])/gu;
+    for (const m of brut.matchAll(motif)) {
+      const f = m[3] ? uneLettre(m[3], m.index) : unSon(m[1] || m[2]);
       if (!f) continue;
       parts.push({ texte: brut.slice(debut, m.index) }, { son: f });
       debut = m.index + m[0].length;

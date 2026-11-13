@@ -79,10 +79,11 @@ nouvelle version d'un coup (au plus 10 minutes après), sans mélanger anciens e
   entraînée sur le [SIWIS French Speech Synthesis Database](https://datashare.ed.ac.uk/handle/10283/2353)
   (licence CC BY 4.0).
 - Voix de secours : la synthèse vocale du navigateur (voix de Microsoft Edge et de Windows).
-- Sons des voyelles du CP (a, i, o, u, é, è) : enregistrements de Sartus85, projet
-  [Lingua Libre](https://lingualibre.org/), licence [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/),
-  via Wikimedia Commons (détail : `outils-voix/sons-sources/CREDITS.txt`).
-  Les sons « mmm » et « sss » sont fabriqués par calcul (`outils-voix/fabriquer_sons.py`).
+- Lettres et sons du CP : le nom des 26 lettres et les voyelles sont des enregistrements de Sartus85,
+  projet [Lingua Libre](https://lingualibre.org/), licence [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/),
+  via Wikimedia Commons (détail : `outils-voix/sons-sources/CREDITS.txt`). Les sons des consonnes
+  (« mmm », « sss », « pe »…) et ou, on, an, e ont été enregistrés pour le jeu par son auteur
+  (seuls les sons du jeu sont publiés, pas les enregistrements d'origine).
 - Carte du monde : [world-atlas](https://github.com/topojson/world-atlas) 2.0.2 (licence ISC), d'après
   [Natural Earth](https://www.naturalearthdata.com/) (domaine public).
 - Drapeaux : [flag-icons](https://github.com/lipis/flag-icons) 7.6.0 (licence MIT, voir

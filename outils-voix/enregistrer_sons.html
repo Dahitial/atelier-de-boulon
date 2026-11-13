@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enregistreur des sons du CP</title>
+<!-- S'ouvre avec enregistreur_sons.py (« Enregistrer les sons.bat ») : c'est lui qui améliore et range les sons. -->
+<style>
+  :root { --fond: #fbf6ec; --carte: #fff; --encre: #2b2118; --doux: #7a6a58; --orange: #e4572e; --vert: #2e9e5b;
+          --bleu: #2e86de; --bord: #e6dccb; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.45 "Segoe UI", system-ui, sans-serif; background: var(--fond); color: var(--encre); }
+  header { padding: 14px 22px; border-bottom: 1px solid var(--bord); display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 20px; }
+  header p { margin: 0; color: var(--doux); }
+  main { display: grid; grid-template-columns: 260px 1fr; gap: 22px; padding: 20px 22px; max-width: 1100px; }
+  @media (max-width: 760px) { main { grid-template-columns: 1fr; } }
+  nav h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--doux); margin: 14px 0 6px; }
+  nav button { display: flex; width: 100%; align-items: center; gap: 10px; padding: 7px 10px; margin: 3px 0; border: 1px solid var(--bord);
+               background: var(--carte); border-radius: 10px; font: inherit; cursor: pointer; text-align: left; }
+  nav button.actif { border-color: var(--orange); box-shadow: 0 0 0 2px var(--orange) inset; }
+  nav .nom { font-weight: 700; min-width: 54px; }
+  nav .etat { margin-left: auto; color: var(--vert); font-weight: 700; }
+  section { background: var(--carte); border: 1px solid var(--bord); border-radius: 18px; padding: 26px; }
+  .grand { font-size: 84px; font-weight: 800; line-height: 1; letter-spacing: .02em; color: var(--orange); }
+  .conseil { font-size: 20px; margin: 14px 0 4px; }
+  .mot { color: var(--doux); font-size: 18px; }
+  .boutons { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+  .boutons button { font: inherit; font-size: 17px; padding: 11px 18px; border-radius: 12px; border: 1px solid var(--bord);
+                    background: #fff; cursor: pointer; }
+  .boutons button:disabled { opacity: .4; cursor: default; }
+  #rec { background: var(--orange); color: #fff; border-color: var(--orange); font-weight: 700; min-width: 210px; }
+  #rec.en-cours { background: #b3361b; }
+  #garder { background: var(--vert); color: #fff; border-color: var(--vert); font-weight: 700; }
+  .niveau { height: 14px; background: #f1e9db; border-radius: 7px; overflow: hidden; margin-top: 18px; }
+  .niveau div { height: 100%; width: 0; background: linear-gradient(90deg, var(--vert), #f4b400 70%, var(--orange)); transition: width .05s; }
+  .niveau div.sature { background: #b3361b; }
+  #message { margin-top: 14px; min-height: 1.5em; font-size: 17px; }
+  #message.erreur { color: #b3361b; }
+  .aide { margin-top: 26px; padding-top: 16px; border-top: 1px dashed var(--bord); color: var(--doux); font-size: 15px; }
+  .aide b { color: var(--encre); }
+  kbd { border: 1px solid var(--bord); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; font-size: 13px; background: #fff; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Enregistreur des sons du CP</h1>
+  <p>Choisis un son, enregistre-le, écoute la version améliorée, puis garde-la ou recommence.</p>
+</header>
+<main>
+  <nav id="liste"></nav>
+  <section>
+    <div class="grand" id="grand"></div>
+    <div class="conseil" id="conseil"></div>
+    <div class="mot" id="mot"></div>
+    <div class="niveau"><div id="niveau"></div></div>
+    <div class="boutons">
+      <button id="rec">● Enregistrer</button>
+      <button id="brut" disabled>▶ Mon enregistrement</button>
+      <button id="ameliore" disabled>▶ Version améliorée</button>
+      <button id="garder" disabled>✓ Garder pour le jeu</button>
+      <button id="actuel">▶ Son actuel du jeu</button>
+    </div>
+    <div id="message"></div>
+    <div class="aide">
+      <b>Comment faire :</b> pièce calme, micro à une main de la bouche (si la barre devient rouge, c'est trop fort). Clique sur « Enregistrer », fais le son
+      pendant environ une seconde, puis reclique (ou attends : ça s'arrête seul après 3 secondes).
+      La version améliorée ne change pas le timbre : elle coupe les silences avant et après, et égalise le volume.
+      « Mon enregistrement » est rejoué au même volume, pour comparer à l'oreille.<br>
+      Raccourcis : <kbd>Espace</kbd> enregistrer / arrêter, <kbd>Entrée</kbd> garder, <kbd>↓</kbd> son suivant.
+    </div>
+  </section>
+</main>
+<script>
+"use strict";
+const SONS = [
+  { groupe: "Consonnes qu'on peut tenir" },
+  { id: "m", grand: "mmm", conseil: "Bouche fermée, la voix vibre dans le nez.", mot: "comme au début de moto" },
+  { id: "n", grand: "nnn", conseil: "Bouche entrouverte, la langue derrière les dents du haut ; ça vibre dans le nez.", mot: "comme au début de nid" },
+  { id: "l", grand: "lll", conseil: "Le bout de la langue contre le haut de la bouche, la voix passe sur les côtés.", mot: "comme au début de lune" },
+  { id: "r", grand: "rrr", conseil: "Au fond de la gorge, comme un petit ronronnement.", mot: "comme au début de radis" },
+  { id: "s", grand: "sss", conseil: "Le serpent : on siffle entre les dents.", mot: "comme au début de souris" },
+  { id: "f", grand: "fff", conseil: "Les dents du haut sur la lèvre du bas, et on souffle.", mot: "comme au début de feu" },
+  { id: "ch", grand: "chhh", conseil: "Comme pour dire « chut ! », sans le « ut ».", mot: "comme au début de chat" },
+  { id: "v", grand: "vvv", conseil: "Comme « fff », mais la gorge vibre.", mot: "comme au début de vélo" },
+  { id: "j", grand: "jjj", conseil: "Comme « chhh », mais la gorge vibre.", mot: "comme au début de jupe" },
+  { groupe: "Consonnes brèves" },
+  { id: "p", grand: "pe", conseil: "Court, les lèvres éclatent, avec un tout petit « e » (pas « pé »).", mot: "comme au début de poule" },
+  { id: "b", grand: "be", conseil: "Comme « pe », mais la gorge vibre.", mot: "comme au début de ballon" },
+  { id: "t", grand: "te", conseil: "Court, la langue contre les dents, petit « e » (pas « té »).", mot: "comme au début de tomate" },
+  { id: "d", grand: "de", conseil: "Comme « te », mais la gorge vibre.", mot: "comme au début de domino" },
+  { groupe: "Voyelles (facultatif)" },
+  { id: "ou", grand: "ou", conseil: "Les lèvres en rond, bien en avant.", mot: "comme dans loup" },
+  { id: "on", grand: "on", conseil: "Le son sort par le nez, lèvres arrondies.", mot: "comme dans ballon" },
+  { id: "an", grand: "an", conseil: "Le son sort par le nez, bouche ouverte.", mot: "comme dans maman" },
+  { id: "e", grand: "e", conseil: "Tout doux, la bouche à peine ouverte.", mot: "comme dans « le » et cheval" },
+];
+const $ = (id) => document.getElementById(id);
+const sons = SONS.filter((s) => s.id);
+let etat = {}, courant = sons[0], urlBrut = null, urlAmeliore = null, enCours = null, audio = null, volumeBrut = 1;
+
+function message(t, erreur = false) { $("message").textContent = t; $("message").className = erreur ? "erreur" : ""; }
+/* lecture par le navigateur ; « gain » peut dépasser 1 (pour monter l'original au niveau de la version améliorée) */
+let lecteur = null;
+async function jouer(url, gain = 1) {
+  if (audio) audio.pause();
+  if (lecteur) { try { lecteur.stop(); } catch {} lecteur = null; }
+  if (!url) return;
+  if (gain === 1) { audio = new Audio(url); audio.play(); return; }
+  const c = window.ctxLecture || (window.ctxLecture = new AudioContext());   // à part du micro
+  const tampon = await c.decodeAudioData(await (await fetch(url)).arrayBuffer());
+  const g = c.createGain(); g.gain.value = gain; g.connect(c.destination);
+  lecteur = c.createBufferSource(); lecteur.buffer = tampon; lecteur.connect(g); lecteur.start();
+}
+
+async function chargerEtat() {
+  try { etat = await (await fetch("/api/etat")).json(); }
+  catch { message("Le serveur ne répond pas : lance « Enregistrer les sons.bat » et garde sa fenêtre ouverte.", true); }
+  choisir(courant);
+}
+function dessinerListe() {
+  const nav = $("liste"); nav.textContent = "";
+  for (const s of SONS) {
+    if (s.groupe) { const h = document.createElement("h2"); h.textContent = s.groupe; nav.append(h); continue; }
+    const b = document.createElement("button");
+    b.className = s === courant ? "actif" : "";
+    b.innerHTML = `<span class="nom"></span><span class="mot-l"></span><span class="etat">${etat[s.id] ? "✓" : ""}</span>`;
+    b.querySelector(".nom").textContent = s.grand;
+    b.querySelector(".mot-l").textContent = s.mot.replace(/^comme (au début de|dans) /, "");
+    b.onclick = () => choisir(s);
+    nav.append(b);
+  }
+}
+function choisir(s) {
+  if (enCours) return;
+  courant = s; urlBrut = urlAmeliore = null;
+  $("grand").textContent = s.grand; $("conseil").textContent = s.conseil; $("mot").textContent = s.mot;
+  ["brut", "ameliore", "garder"].forEach((id) => ($(id).disabled = true));
+  $("actuel").textContent = "▶ Son actuel du jeu" + (etat[s.id] ? " (ton enregistrement)" : ["m", "s"].includes(s.id) ? " (fabriqué par calcul)" : ["ou", "on", "an", "e"].includes(s.id) ? " (voix de Sartus85)" : "");
+  message(etat[s.id] ? "Déjà enregistré. Tu peux le refaire si tu veux." : "");
+  dessinerListe();
+}
+
+/* --- enregistrement : on capte le micro tel quel (sans « suppression de bruit », qui mangerait les « sss »).
+   Le micro est ouvert seulement pendant l'enregistrement : tant qu'il est ouvert, Windows passe le son en
+   « mode communication » (autres sons baissés, casque Bluetooth en qualité téléphone) : on n'entendait plus
+   bien, ou plus du tout, les écoutes. --- */
+let ctx = null, flux = null;
+function fermerMicro() {
+  if (flux) flux.getTracks().forEach((t) => t.stop());
+  if (ctx) ctx.close();
+  flux = null; ctx = null;
+}
+async function micro() {
+  if (ctx) return;
+  flux = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 1 } });
+  ctx = new AudioContext();
+  const code = "class C extends AudioWorkletProcessor{process(i){const c=i[0]&&i[0][0];if(c)this.port.postMessage(c.slice(0));return true}}registerProcessor('capteur',C)";
+  await ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([code], { type: "text/javascript" })));
+}
+async function demarrer() {
+  if (audio) audio.pause();
+  if (lecteur) { try { lecteur.stop(); } catch {} lecteur = null; }
+  try { await micro(); } catch (e) { fermerMicro(); message("Je n'ai pas accès au micro : autorise-le dans le navigateur (" + e.name + ").", true); return; }
+  if (ctx.state === "suspended") await ctx.resume();
+  const source = ctx.createMediaStreamSource(flux), noeud = new AudioWorkletNode(ctx, "capteur");
+  const morceaux = [];
+  let sature = false;
+  noeud.port.onmessage = (ev) => {
+    morceaux.push(ev.data);
+    let s = 0, crete = 0; for (const v of ev.data) { s += v * v; crete = Math.max(crete, Math.abs(v)); }
+    $("niveau").style.width = Math.min(100, Math.sqrt(s / ev.data.length) * 400) + "%";
+    if (crete > 0.97 && !sature) { sature = true; $("niveau").classList.add("sature"); message("Trop fort ! Éloigne un peu le micro.", true); }
+  };
+  source.connect(noeud);
+  enCours = { source, noeud, morceaux, fin: setTimeout(arreter, 3000) };
+  $("rec").textContent = "■ Arrêter"; $("rec").classList.add("en-cours");
+  message("J'enregistre… fais le son « " + courant.grand + " ».");
+}
+async function arreter() {
+  if (!enCours) return;
+  const { source, noeud, morceaux, fin } = enCours; enCours = null;
+  clearTimeout(fin); source.disconnect(); noeud.port.onmessage = null;
+  const sr = ctx.sampleRate;
+  fermerMicro();
+  $("rec").textContent = "● Enregistrer"; $("rec").classList.remove("en-cours");
+  $("niveau").style.width = "0"; $("niveau").classList.remove("sature");
+  const wav = versWav(morceaux, sr);
+  urlBrut = URL.createObjectURL(wav); $("brut").disabled = false;
+  message("J'améliore le son…");
+  try {
+    const r = await fetch("/api/essai?son=" + encodeURIComponent(courant.id), { method: "POST", body: wav });
+    if (!r.ok) throw new Error(await r.text());
+    urlAmeliore = URL.createObjectURL(await r.blob());
+    // l'original est rejoué au même volume que la version améliorée : on compare le son, pas la force
+    const gainDb = parseFloat(r.headers.get("X-Gain-dB") || "0");
+    volumeBrut = Math.pow(10, gainDb / 20);
+    const crete = parseFloat(r.headers.get("X-Crete") || "0"), niveau = parseFloat(r.headers.get("X-Niveau-dB") || "0");
+    $("ameliore").disabled = false; $("garder").disabled = false;
+    if (crete >= 0.97) message("⚠ Ton enregistrement sature (trop fort) : le son est abîmé. Éloigne un peu le micro ou baisse son volume, puis recommence.", true);
+    else if (niveau < -35) message("⚠ Ton enregistrement est très faible : je l'ai monté de " + Math.round(gainDb) + " dB, et le bruit de la pièce monte avec lui. Rapproche-toi du micro et recommence.", true);
+    else message("Écoute la version améliorée. Si elle te plaît : « Garder pour le jeu ». Sinon, enregistre à nouveau.");
+    // petite attente : le casque (Bluetooth surtout) met un instant à revenir en qualité normale après le micro
+    setTimeout(() => jouer(urlAmeliore), 900);
+  } catch (e) { message("Problème : " + e.message, true); }
+}
+function versWav(morceaux, sr) {
+  const n = morceaux.reduce((a, m) => a + m.length, 0), buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const ecrire = (o, t) => { for (let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
+  ecrire(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); ecrire(8, "WAVE"); ecrire(12, "fmt ");
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, sr, true);
+  v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); ecrire(36, "data"); v.setUint32(40, n * 2, true);
+  let o = 44;
+  for (const m of morceaux) for (const x of m) { v.setInt16(o, Math.max(-1, Math.min(1, x)) * 32767, true); o += 2; }
+  return new Blob([buf], { type: "audio/wav" });
+}
+async function garder() {
+  if ($("garder").disabled) return;
+  try {
+    const r = await fetch("/api/garder?son=" + encodeURIComponent(courant.id), { method: "POST" });
+    if (!r.ok) throw new Error(await r.text());
+    etat[courant.id] = true;
+    $("actuel").textContent = "▶ Son actuel du jeu (ton enregistrement)";
+    message("✓ « " + courant.grand + " » est gardé pour le jeu.");
+    const suivant = sons.find((s) => !etat[s.id]);
+    setTimeout(() => (suivant ? choisir(suivant) : (dessinerListe(), message("Bravo, tous les sons sont enregistrés ! Tu peux fermer la page et la fenêtre noire."))), 900);
+  } catch (e) { message("Problème : " + e.message, true); }
+}
+
+$("rec").onclick = () => (enCours ? arreter() : demarrer());
+$("brut").onclick = () => jouer(urlBrut, volumeBrut);
+$("ameliore").onclick = () => jouer(urlAmeliore);
+$("garder").onclick = garder;
+$("actuel").onclick = async () => {
+  const url = "/niveaux/cp/audio/sons/" + courant.id + ".ogg?t=" + Date.now();
+  const r = await fetch(url, { method: "HEAD" });
+  if (r.ok) jouer(url); else message("Il n'y a pas encore de son pour « " + courant.grand + " » dans le jeu (la voix de synthèse le lit).");
+};
+document.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "INPUT") return;
+  if (e.code === "Space") { e.preventDefault(); $("rec").click(); }
+  else if (e.key === "Enter") { e.preventDefault(); garder(); }
+  else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault(); const i = sons.indexOf(courant) + (e.key === "ArrowDown" ? 1 : -1);
+    if (sons[i]) choisir(sons[i]);
+  }
+});
+choisir(sons[0]);
+chargerEtat();
+</script>
+</body>
+</html>

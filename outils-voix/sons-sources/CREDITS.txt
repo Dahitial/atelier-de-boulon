@@ -1,10 +1,22 @@
-Voyelles a, i, o, u, é, è : enregistrements de Sartus85 (projet Lingua Libre), licence CC BY-SA 4.0.
-https://creativecommons.org/licenses/by-sa/4.0/
-Sources (Wikimedia Commons) :
-  a.wav       ← File:LL-Q150 (fra)-Sartus85-a (lettre).wav
-  i.wav       ← File:LL-Q150 (fra)-Sartus85-i (lettre).wav
-  o.wav       ← File:LL-Q150 (fra)-Sartus85-o (lettre).wav
-  u.wav       ← File:LL-Q150 (fra)-Sartus85-u (lettre).wav
-  e-aigu.wav  ← File:LL-Q150 (fra)-Sartus85-et.wav    (le mot « et » se dit [é])
-  e-grave.wav ← File:LL-Q150 (fra)-Sartus85-haie.wav  (le mot « haie » se dit [è])
-Téléchargés le 13/11/2026. fabriquer_sons.py en tire les sons du jeu (silence coupé, volume égalisé).
+Lettres et sons du CP — d'où viennent les fichiers de ce dossier.
+
+1. Enregistrements de Sartus85 (projet Lingua Libre), licence CC BY-SA 4.0
+   https://creativecommons.org/licenses/by-sa/4.0/
+   Sources (Wikimedia Commons, téléchargées le 13/11/2026) :
+     lettres/<x>.wav ← File:LL-Q150 (fra)-Sartus85-<x> (lettre).wav   (les 26 lettres, de a à z)
+     e-aigu.wav      ← File:LL-Q150 (fra)-Sartus85-et.wav    (le mot « et » se dit [é])
+     e-grave.wav     ← File:LL-Q150 (fra)-Sartus85-haie.wav  (le mot « haie » se dit [è])
+     ou.wav          ← File:LL-Q150 (fra)-Sartus85-ou.wav
+     on.wav          ← File:LL-Q150 (fra)-Sartus85-on.wav
+     an.wav          ← File:LL-Q150 (fra)-Sartus85-an.wav
+   Dans le jeu : le nom des 26 lettres, et les voyelles a, i, o, u, é, è (et e, ou, on, an s'ils
+   n'ont pas été enregistrés dans voix/).
+
+2. voix/<son>.wav : sons enregistrés pour le jeu par son auteur, avec l'enregistreur
+   (enregistrer_sons.html) : consonnes m, n, l, r, s, f, ch, v, j, p, b, t, d et voyelles ou, on, an, e.
+   Ils passent avant les autres sources. Licence : celle du jeu.
+   Ce dossier n'est pas publié (enregistrements d'origine, gardés par l'auteur) : seuls les sons du jeu
+   (niveaux/cp/audio/sons/) le sont. Sans lui, fabriquer_sons.py referait mmm et sss par calcul.
+
+fabriquer_sons.py en tire les fichiers du jeu (niveaux/cp/audio/) : silence coupé avant et après (en
+gardant la fin du souffle), volume égalisé ; le timbre n'est pas modifié.

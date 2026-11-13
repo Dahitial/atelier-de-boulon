@@ -47,22 +47,36 @@ reconstruction du Setup (journal : `deuxieme_passe.log`). Il suit quatre étapes
 Les consignes qui contiennent des nombres tirés au hasard (années, températures…) ne
 sont pas enregistrées : la voix d'Edge les lit.
 
-## Les sons tenus du CP
+## Les lettres et les sons du CP
 
-La voix de synthèse dit mal un son tout seul : « mmm » devient « èm, èm, èm ». Le CP joue donc de
-vrais sons (`niveaux/cp/audio/sons/*.ogg`) quand Boulon dit « [a] », « le son « i » », « mmm »… :
-le moteur coupe la phrase en morceaux (`Voice.morceaux`, liste des sons dans `NIVEAU.sons`).
+La voix de synthèse dit mal une lettre ou un son tout seul : « mmm » devient « èm, èm, èm », « é » devient
+« hé ». Le CP joue donc de vrais enregistrements : le moteur coupe la phrase en morceaux (`Voice.morceaux`)
+et joue entre deux :
+- le **son** (`niveaux/cp/audio/sons/`, liste `NIVEAU.sons`) pour « [p] », « fff », « le son « i » »… ;
+- le **nom** de la lettre (`niveaux/cp/audio/lettres/`, liste `NIVEAU.lettres`) pour une lettre seule :
+  « La lettre p fait… », « l et a font la », « m + a → ma ».
+Restent à la voix : « a » quand c'est le verbe (« Zigzag a gagné », « il y a »), « y », « à », et une
+lettre après un nombre (« 8 h »).
 
-`fabriquer_sons.py` refait ces fichiers :
-- voyelles a, i, o, u, é, è : enregistrements de Sartus85 (Lingua Libre, CC BY-SA 4.0), dans
-  `sons-sources/` (é vient du mot « et », è du mot « haie ») ; le script coupe le silence et égalise
-  le volume ;
-- « mmm » et « sss » : fabriqués par calcul (0,75 s ; 1,3 s paraissait trop long à l'écoute).
+D'où viennent les fichiers (`fabriquer_sons.py` les refait tous) :
+- le nom des 26 lettres et les voyelles a, i, o, u, é, è : Sartus85 (Lingua Libre, CC BY-SA 4.0),
+  dans `sons-sources/` ;
+- les consonnes (m, n, l, r, s, f, ch, v, j, p, b, t, d) et ou, on, an, e : enregistrés par l'auteur
+  du jeu avec l'enregistreur, dans `sons-sources/voix/` (ils passent avant tout le reste).
 
-Une lettre accentuée seule dans la phrase (« La lettre é… ») est aussi remplacée par le vrai son :
-la voix la lisait « hé ». Pas encore de fichier pour [l] et [r] : la voix d'Edge les dit (et les consonnes s'appuient sur
-des mots : lune, lit, lapin). Pour en ajouter un, déposer `<son>.ogg` dans `niveaux/cp/audio/sons/`
-et l'inscrire dans `NIVEAU.sons`.
+**L'enregistreur** : double-clic sur `Enregistrer les sons.bat` (page dans le navigateur et petit serveur
+local `enregistreur_sons.py`). On voit le son à faire, on l'enregistre, on écoute la version améliorée,
+puis on la garde ou on recommence. La version améliorée : bruit constant enlevé (bourdonnement électrique à
+50 Hz et ses multiples, sifflement aigu de l'ordinateur : mesuré dans les silences puis soustrait), silence
+coupé avant et après, volume PERÇU égalisé à −27 dB A (un peu sous les lettres de Sartus85 : réglés sur le
+volume brut, les sons enregistrés paraissaient trop forts). Le timbre de la voix ne change pas. Conseil :
+enregistrer sur batterie, chargeur débranché (le bourdonnement vient souvent de là). Le micro
+est fermé après chaque prise : tant qu'il est ouvert, Windows passe en « mode communication » (sons
+baissés, casque Bluetooth en qualité téléphone) et l'écoute devient étouffée ou muette.
+
+Essais abandonnés, pour mémoire : prolonger les consonnes de Sartus85 par calcul (sons de robot), les
+découper dans le nom des lettres (saccadé), les faire dire par Chatterbox (il invente : on dirait une
+autre langue).
 
 ## Fichiers utiles
 
