@@ -230,7 +230,6 @@ App.register("course-nombres", (root) => {
     choix.innerHTML = "";
     shuffle([bonne, ...autres]).forEach((n) => {
       const b = h("button", { class: "choice nombre", type: "button" }, h("span", { class: "nb" }, String(n)));
-      b.addEventListener("mouseenter", () => { if (NIVEAU.toutEnVoix) Voice.speak(String(n)); });
       b.addEventListener("click", () => repondre(n, b));
       choix.appendChild(b);
     });

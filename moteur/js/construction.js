@@ -628,7 +628,6 @@ App.register("cubes", (root, params) => {
         if (v === total) { fini = true; b.classList.add("green"); C.gagne(`Oui, il y a ${total} cubes !`); }
         else { essai++; b.disabled = true; C.rate(essai === 1 ? "Pas tout à fait. Pense aux cubes cachés sous les piles et derrière !" : "Compte pile par pile : chaque pile a autant de cubes que d'étages."); }
       } }, String(v));
-      if (NIVEAU.toutEnVoix) b.addEventListener("mouseenter", () => Voice.speak(String(v)));
       rangee.appendChild(b);
     });
     zone.appendChild(rangee);
