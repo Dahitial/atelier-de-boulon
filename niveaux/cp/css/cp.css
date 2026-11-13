@@ -53,9 +53,12 @@
 .cp-collection { display: inline-block; max-width: 760px; font-size: 64px; line-height: 1.25; letter-spacing: 6px; word-break: break-all; }
 .feedback { font-size: 32px; border-radius: 40px; padding: 14px 30px; }
 
-/* le défi de Zigzag : des boutons de chapitre avec une image, qui tiennent dans 4 colonnes */
-.lesson-btn.avec-picto { font-size: 13px; padding: 5px 6px; line-height: 1.1; text-align: left; justify-content: flex-start !important; gap: 6px; hyphens: auto; }
-.lesson-btn.avec-picto .defi-picto svg { width: 34px; height: 34px; }
+/* le défi de Zigzag : des boutons de chapitre avec une image, qui tiennent dans 6 colonnes étroites
+   (colonnes et images resserrées : chaque mot du titre tient sur sa ligne, sans déborder du bouton) */
+.defi-col { padding: 10px 7px !important; }
+.lesson-btn.avec-picto { font-size: 13px; padding: 5px 5px; line-height: 1.1; text-align: left; justify-content: flex-start !important; gap: 4px; hyphens: auto; overflow-wrap: break-word; }
+.lesson-btn.avec-picto .defi-picto svg { width: 28px; height: 28px; }
+.lesson-btn.avec-picto > span:nth-child(2) { min-width: 0; }
 .lesson-btn.avec-picto > span:last-child { display: none; }   /* le compte des victoires : pas utile à lire au CP */
 
 /* les jours de la semaine (Le temps) : un mot à la place d'une image */

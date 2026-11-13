@@ -290,7 +290,7 @@ App.register("defi", (root, params = {}) => {
   const area = h("div", { class: "abs", style: { left: "40px", right: "40px", top: "330px", bottom: "100px", display: "grid", gridTemplateColumns: `repeat(${matieres.length}, minmax(0, 1fr))`, gap: "14px" } });
   root.appendChild(area);
   matieres.forEach((s) => {
-    const col = h("div", { class: "panel", style: { padding: "12px 16px" } }, h("h3", { class: "title dark", style: { fontSize: "24px", margin: "0 0 8px", color: s.color } }, s.name));
+    const col = h("div", { class: "panel defi-col", style: { padding: "12px 16px" } }, h("h3", { class: "title dark", style: { fontSize: "24px", margin: "0 0 8px", color: s.color } }, s.name));
     s.chapters.filter((ch) => !periode || ch.periode === periode).forEach((ch) => {
       const rec = u.defi[ch.id] || { wins: 0, losses: 0 };
       const b = h("button", { class: "lesson-btn" + (ch.picto ? " avec-picto" : ""), style: { marginBottom: "6px", display: "flex", justifyContent: "space-between", alignItems: "center" }, onclick: () => { Sound.click(); App.go("defi-jeu", { chapter: ch.id }); } },

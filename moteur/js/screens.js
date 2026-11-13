@@ -135,7 +135,8 @@ App.register("exterieur", (root) => {
   root.appendChild(h("div", { class: "abs", style: { left: "0", right: "0", top: "26px", textAlign: "center" } },
     h("h1", { class: "title", style: { fontSize: "58px" } }, "L'Atelier de Boulon"),
     h("div", { class: "title", style: { fontSize: "30px", color: "#f6c445" } }, NIVEAU.sousTitre)));
-  if (u) root.appendChild(h("div", { class: "maison-de abs" }, (/^[aeiouyàâéèêîôh]/i.test(u.name) ? "La maison d'" : "La maison de ") + u.name));
+  /* « d' » devant une voyelle (Amine, Inès, Yves), « de » devant une consonne, un h (Hamza) ou un y suivi d'une voyelle (Yasmine, Youssef) */
+  if (u) root.appendChild(h("div", { class: "maison-de abs" }, (/^([aeiouàâäéèêëîïôöûü]|y[^aeiouyàâäéèêëîïôöûü])/i.test(u.name) ? "La maison d'" : "La maison de ") + u.name));
   const tip = App.tooltip(root);
   const door = root.querySelector('[data-id="entrer"]');
   door.addEventListener("mouseenter", (e) => { Sound.hover(); tip.show("Entrer dans l'atelier", 520, 420); });
@@ -255,7 +256,7 @@ App.register("atelier", (root, params) => {
   root.appendChild(scene);
   const tip = App.tooltip(root);
   const m = App.mascot(root, NIVEAU.mascotteAtelier || { x: 560, y: 560 });
-  /* le petit plan des pièces, en haut au milieu : on clique pour changer de pièce (la voix dit son nom) */
+  /* le petit plan des pièces, en haut au milieu : on clique pour changer de pièce */
   if (piece) {
     const plan = h("nav", { class: "plan-pieces", "aria-label": "Les pièces de l'atelier", style: NIVEAU.lampeBouton ? { right: "150px" } : null });
     Pieces.liste().forEach((p) => {
@@ -263,7 +264,7 @@ App.register("atelier", (root, params) => {
       const b = h("button", { class: "plan-piece" + (ici ? " ici" : ""), type: "button", "aria-current": ici ? "true" : null, title: p.nom,
         onclick: () => { if (ici) { Voice.speak(`Tu es ${p.dans}.`); return; } Sound.door(); App.go("atelier", { piece: p.id }); } },
         h("span", { class: "plan-mur", style: { background: p.mur } }), p.court);
-      b.addEventListener("mouseenter", () => { Sound.hover(); if (NIVEAU.toutEnVoix) Voice.speak(p.nom); });
+      b.addEventListener("mouseenter", () => Sound.hover());
       plan.appendChild(b);
     });
     root.appendChild(plan);
@@ -297,7 +298,7 @@ App.register("atelier", (root, params) => {
     lampeBtn = h("button", { class: "icon-btn lampe-btn", style: { right: "86px", top: "18px" }, type: "button", "aria-label": "La lampe", "aria-pressed": "false",
       html: `<svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true"><path d="M20 4 a12 12 0 0 1 7 21.6 v4.4 h-14 v-4.4 a12 12 0 0 1 7 -21.6 z" class="ampoule" stroke="#2b2236" stroke-width="2.6" stroke-linejoin="round"/><path d="M14 33 h12 M15.5 37 h9" stroke="#2b2236" stroke-width="2.6" stroke-linecap="round"/><path d="M17 19 l3 3 l3 -3" fill="none" stroke="#2b2236" stroke-width="2" stroke-linecap="round"/></svg>`,
       onclick: () => allumerLampe(!App.helpMode, true) });
-    lampeBtn.addEventListener("mouseenter", () => { Sound.hover(); if (NIVEAU.toutEnVoix && !App.helpMode) Voice.speak("La lampe"); });
+    lampeBtn.addEventListener("mouseenter", () => Sound.hover());
     root.appendChild(lampeBtn);
     /* on change de pièce : la lampe reste comme elle était ; on revient d'un autre écran : elle est éteinte */
     if (params.piece && App.lampeGardee) allumerLampe(true, false); else App.lampeGardee = false;
@@ -313,9 +314,8 @@ App.register("atelier", (root, params) => {
       const x = (r.left + r.width / 2 - sr.left) * k, y = Math.max(40, (r.top - sr.top) * k - 6);
       tip.show(App.helpMode ? `${g.dataset.label}<small>${g.dataset.desc}</small>` : g.dataset.label, x, y);
     };
-    /* tout en voix (CP) : Boulon dit le nom de l'objet survolé */
-    const direNom = () => { if (NIVEAU.toutEnVoix && !App.helpMode) Voice.speak(g.dataset.label); };
-    g.addEventListener("mouseenter", () => { Sound.hover(); showTip(); if (App.helpMode) m.say(g.dataset.desc); else direNom(); });
+    /* au survol, Boulon ne parle que lampe allumée (il explique l'objet) : dire le nom à chaque passage de la souris gênait */
+    g.addEventListener("mouseenter", () => { Sound.hover(); showTip(); if (App.helpMode) m.say(g.dataset.desc); });
     g.addEventListener("focus", showTip);
     g.addEventListener("mouseleave", () => tip.hide());
     g.addEventListener("blur", () => tip.hide());
@@ -341,7 +341,7 @@ App.register("atelier", (root, params) => {
       const b = h("button", { class: "etiquette-objet", style: { left: e.x + "px", top: e.y + "px", minWidth: (e.w || 150) + "px", "--teinte": e.couleur || "#2b2236" } });
       b.innerHTML = ICONE_HAUT_PARLEUR;
       b.append(e.texte);
-      b.addEventListener("mouseenter", () => { Sound.hover(); if (App.helpMode) m.say(g.dataset.desc); else direNom(); });
+      b.addEventListener("mouseenter", () => { Sound.hover(); if (App.helpMode) m.say(g.dataset.desc); });
       b.addEventListener("click", act);
       root.appendChild(b);
     }
