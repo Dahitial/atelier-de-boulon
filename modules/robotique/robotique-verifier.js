@@ -17,13 +17,13 @@ for (const [palier, missions] of Object.entries(ROBO_MISSIONS)) {
       if (court == null) { console.log("ERREUR", nom, "but inatteignable"); erreurs++; return; }
       let info = `${nom} : plus court ${court} pas`;
       if (g.sol) {
-        const r = R.executer(g, g.sol, !!m.relatif);
+        const r = R.executer(g, g.sol, !!m.relatif, !!m.repeteApres);
         if (!r.arrive) { console.log("ERREUR", nom, "la référence n'arrive pas", JSON.stringify(r)); erreurs++; }
         info += `, référence ${g.sol.length} cartes OK`;
       }
       if (g.bug) {
         const p = g.sol.slice(); p[g.bug.i] = g.bug.faux;
-        const r = R.executer(g, p, !!m.relatif);
+        const r = R.executer(g, p, !!m.relatif, !!m.repeteApres);
         if (r.arrive) { console.log("ERREUR", nom, "le bug ne fait pas rater"); erreurs++; }
         info += `, bug rate (${r.choc ? "choc" : "arrêt ailleurs"})`;
       }

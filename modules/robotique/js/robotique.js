@@ -217,7 +217,7 @@ App.register("robo-grille", (root, params) => {
       choix.forEach(ajouter);
       if (m.repete) rep.forEach(ajouter);
       panneau.append(h("h3", { class: "robo-sous" }, relatif ? "Les commandes" : "Les flèches"), pal);
-      if (m.repete) panneau.appendChild(h("p", { class: "robo-aide" }, "« fois » répète la carte qui la suit."));
+      if (m.repete) panneau.appendChild(h("p", { class: "robo-aide" }, m.repeteApres ? "Mets « fois » juste après la flèche à répéter : → 3× = 3 fois à droite." : "« Répète » fait plusieurs fois la carte qui la suit."));
     }
     let enCours = false;
     const go = h("button", { class: "robo-go", type: "button" }, "Go !");
@@ -227,7 +227,7 @@ App.register("robo-grille", (root, params) => {
       if (enCours || fini) return;
       if (!prog.length) { Sound.bad(); Voice.speak(cp ? "Mets d'abord des flèches dans le programme !" : "Le programme est vide."); return; }
       enCours = true; Sound.click(); auDepart(); await roboAttendre(250);
-      const res = RoboMoteur.executer(g, prog, relatif), slots = [...fente.children];
+      const res = RoboMoteur.executer(g, prog, relatif, !!m.repeteApres), slots = [...fente.children];
       for (const e of res.etapes) {
         slots.forEach((s, i) => s.classList.toggle("actif", i === e.i || i === e.boucle));
         pos.c = e.c; pos.r = e.r; pos.dir = e.dir; placer(); Sound.pop();

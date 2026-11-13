@@ -16,27 +16,40 @@ const RoboMoteur = {
       || (s === "b" && x === c && x === c2 && ((y === r && r2 === r + 1) || (y === r2 && r === r2 + 1))));
   },
 
-  /* le programme déplié en pas : « r3 » répète 3 fois la carte suivante.
-     Chaque pas garde le numéro de la carte (pour l'allumer) et celui de la boucle éventuelle. */
-  deplier(prog) {
+  /* le programme déplié en pas. Chaque pas garde le numéro de la carte (pour l'allumer) et celui de la boucle éventuelle.
+     - avant (CE2, « Répète 3 fois : avance ») : « r3 » répète 3 fois la carte qui SUIT ;
+     - apres (CP, « → 3 fois ») : « r3 » répète 3 fois la carte JUSTE AVANT (l'ordre naturel en français).
+     Une carte « fois » du mauvais côté est comprise quand même : sans carte après, elle prend celle d'avant, et inversement. */
+  deplier(prog, apres = false) {
+    const estBoucle = (x) => /^r\d$/.test(x);
     const pas = [];
+    let dejaRepetee = -1;   // la carte juste avant a déjà sa boucle
     for (let i = 0; i < prog.length; i++) {
       const p = prog[i];
-      if (/^r\d$/.test(p)) {
-        const j = i + 1;
-        if (j >= prog.length || /^r\d$/.test(prog[j])) continue;   // une boucle sans carte : rien
-        for (let k = 0; k < Number(p[1]); k++) pas.push({ cmd: prog[j], i: j, boucle: i });
-        i = j;
-      } else pas.push({ cmd: p, i, boucle: -1 });
+      if (!estBoucle(p)) { pas.push({ cmd: p, i, boucle: -1 }); continue; }
+      const n = Number(p[1]);
+      const avant = i - 1 >= 0 && !estBoucle(prog[i - 1]) && dejaRepetee !== i - 1 ? i - 1 : -1;
+      const suite = i + 1 < prog.length && !estBoucle(prog[i + 1]) ? i + 1 : -1;
+      const cible = apres ? (avant >= 0 ? avant : suite) : (suite >= 0 ? suite : avant);
+      if (cible < 0) continue;                                    // une boucle sans carte : rien
+      if (cible === avant) {
+        /* la carte d'avant est déjà faite une fois : on l'allume avec la boucle, et on ajoute les autres fois */
+        pas[pas.length - 1].boucle = i;
+        for (let k = 1; k < n; k++) pas.push({ cmd: prog[avant], i: avant, boucle: i });
+        dejaRepetee = avant;
+      } else {
+        for (let k = 0; k < n; k++) pas.push({ cmd: prog[suite], i: suite, boucle: i });
+        dejaRepetee = suite; i = suite;
+      }
     }
     return pas;
   },
 
   /* exécute un programme ; renvoie les positions successives et si Rivet arrive sur l'écrou */
-  executer(g, prog, relatif) {
+  executer(g, prog, relatif, apres = false) {
     let c = g.depart[0], r = g.depart[1], dir = g.depart[2] || "droite";
     const etapes = [];
-    for (const p of this.deplier(prog)) {
+    for (const p of this.deplier(prog, apres)) {
       if (relatif && (p.cmd === "g" || p.cmd === "d")) {
         dir = this.ORDRE[(this.ORDRE.indexOf(dir) + (p.cmd === "g" ? 3 : 1)) % 4];
         etapes.push({ c, r, dir, i: p.i, boucle: p.boucle });
