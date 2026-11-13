@@ -5,9 +5,17 @@
    syllabes, dictée en étiquettes, compter, tri). La période 1 complète arrive en phase 3. */
 "use strict";
 
+/* Mots qui se prononcent pareil (homophones) : dans un exercice « écoute, puis clique sur le mot écrit », deux
+   d'entre eux proposés ensemble rendraient les deux réponses justes (Boulon dit « é » : « et » ou « est » ?). */
+const CP_HOMOPHONES = [["et", "est"], ["a", "à"], ["ou", "où"], ["on", "ont"], ["son", "sont"], ["sa", "ça"],
+  ["la", "là"], ["ces", "ses", "c'est", "s'est"], ["mais", "mes"], ["leur", "leurs"], ["vert", "verre", "ver", "vers"],
+  ["mer", "mère", "maire"], ["sel", "selle"], ["pain", "pin"], ["cou", "coup", "coût"], ["sang", "cent", "sans"]];
+const memeSon = (a, b) => a === b || CP_HOMOPHONES.some((g) => g.includes(a) && g.includes(b));
+
 const CP = {
   un: (t) => t[Math.floor(Math.random() * t.length)],
-  plusieurs: (t, n) => shuffle(t.slice()).slice(0, n),
+  /* n éléments tirés au hasard, jamais deux qui se prononcent pareil (voir CP_HOMOPHONES) */
+  plusieurs: (t, n) => shuffle(t.slice()).reduce((pris, x) => (pris.length < n && !pris.some((p) => memeSon(p, x)) ? [...pris, x] : pris), []),
   entre: (a, b) => a + Math.floor(Math.random() * (b - a + 1)),
   /* série de n questions produites par un générateur */
   serie: (gen, n = 8) => () => Array.from({ length: n }, gen),
