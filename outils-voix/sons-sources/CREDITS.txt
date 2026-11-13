@@ -1,0 +1,10 @@
+Voyelles a, i, o, u, é, è : enregistrements de Sartus85 (projet Lingua Libre), licence CC BY-SA 4.0.
+https://creativecommons.org/licenses/by-sa/4.0/
+Sources (Wikimedia Commons) :
+  a.wav       ← File:LL-Q150 (fra)-Sartus85-a (lettre).wav
+  i.wav       ← File:LL-Q150 (fra)-Sartus85-i (lettre).wav
+  o.wav       ← File:LL-Q150 (fra)-Sartus85-o (lettre).wav
+  u.wav       ← File:LL-Q150 (fra)-Sartus85-u (lettre).wav
+  e-aigu.wav  ← File:LL-Q150 (fra)-Sartus85-et.wav    (le mot « et » se dit [é])
+  e-grave.wav ← File:LL-Q150 (fra)-Sartus85-haie.wav  (le mot « haie » se dit [è])
+Téléchargés le 13/11/2026. fabriquer_sons.py en tire les sons du jeu (silence coupé, volume égalisé).

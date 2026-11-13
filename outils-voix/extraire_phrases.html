@@ -15,7 +15,11 @@
 <script>
 Store.load();
 const items = new Map();   // clé -> { key, text, prio }
+/* une phrase avec des sons tenus (« [a] », « mmm »…) est dite en morceaux : on enregistre chaque morceau */
 function add(text, prio) {
+  for (const p of Voice.morceaux(text)) if (p.texte != null) ajouter(p.texte, prio);
+}
+function ajouter(text, prio) {
   const clean = Voice.clean(text);
   const key = Voice.key(text);
   if (!key || key.split(" ").length < 2) return;        // mots isolés : laissés à la voix d'Edge

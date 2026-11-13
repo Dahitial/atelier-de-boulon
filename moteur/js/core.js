@@ -287,6 +287,8 @@ const Voice = {
   isNatural(v) { return !!v && /natural|google/i.test(v.name); },
   isMale(v) { return /Henri|Remy|Rémy|Paul|Antoine|Jean|Thierry|Gerard|Fabrice|Claude/i.test(v.name); },
   init() {
+    // les sons tenus sont courts : on les charge d'avance, sinon le premier arrive avec du retard
+    if (typeof NIVEAU !== "undefined" && NIVEAU.sons) this._prets = Object.values(NIVEAU.sons).map((f) => { const a = new Audio(); a.preload = "auto"; a.src = f; return a; });
     if (!("speechSynthesis" in window)) return;
     this.refresh();
     speechSynthesis.addEventListener?.("voiceschanged", () => this.refresh());
@@ -321,12 +323,65 @@ const Voice = {
     const files = window.VOICE_FILES || {};
     return files[this.key(text)] || null;
   },
+  /* Les « sons tenus » (NIVEAU.sons : voyelles, « mmm », « sss »…) : la voix de synthèse les dit mal
+     (« mmm » devient « èm, èm, èm »). Un texte comme « La lettre m se dit la bouche fermée : « mmm »,
+     comme au début de moto. » est donc coupé en morceaux : la voix dit le texte, le jeu joue le vrai son.
+     Sont reconnus : [a], « i », « mmm » (une lettre répétée), un son dit tout seul (« u »), et une lettre
+     accentuée isolée dans la phrase (« La lettre é… » : la voix dirait « hé »). Un « a » isolé reste à la
+     voix : c'est souvent le verbe (« il a »).
+     Rend [{ texte }] ou [{ texte }, { son: fichier }, …] ; sans son reconnu, le texte d'origine tel quel. */
+  morceaux(text) {
+    const sons = (typeof NIVEAU !== "undefined" && NIVEAU.sons) || null;
+    if (!sons) return [{ texte: text }];
+    const cle = (x) => { x = x.trim().toLowerCase(); if (/^(.)\1+$/u.test(x)) x = x[0]; return sons[x] || null; };
+    const brut = String(text).replace(/<[^>]+>/g, "");
+    const seul = brut.trim().replace(/[.!?…]+$/, "");
+    if (seul.length <= 4 && cle(seul)) return [{ son: cle(seul) }];
+    const parts = [];
+    let debut = 0;
+    for (const m of brut.matchAll(/\[([^\]\s]{1,4})\]|«\s*([^»\s]{1,4})\s*»|(?<!\p{L})([^\P{L}a-zA-Z])(?!\p{L})/gu)) {
+      const f = cle(m[1] || m[2] || m[3]);
+      if (!f) continue;
+      parts.push({ texte: brut.slice(debut, m.index) }, { son: f });
+      debut = m.index + m[0].length;
+    }
+    if (!parts.length) return [{ texte: text }];
+    parts.push({ texte: brut.slice(debut) });
+    return parts.filter((p) => p.son || /[\p{L}\p{N}]/u.test(p.texte));
+  },
   audio: null,
   speak(text, opts = {}) {
-    const { rate, pitch, onend, who = "boulon" } = opts;
-    if (!Store.data.settings.voice) { onend && onend(); return; }
+    if (!Store.data.settings.voice) { opts.onend && opts.onend(); return; }
     const seq = ++this._seq;
     if (this.audio) { this.audio.pause(); this.audio = null; }
+    const parts = this.morceaux(text);
+    if (parts.length === 1 && parts[0].texte != null) { this._dire(text, opts, seq); return; }
+    // texte et sons à la suite ; interrompu par une autre phrase, on prévient une seule fois (comme la synthèse)
+    if ("speechSynthesis" in window) speechSynthesis.cancel();
+    let k = 0, fini = false;
+    const fin = () => { if (!fini) { fini = true; opts.onend && opts.onend(); } };
+    const suite = () => {
+      if (seq !== this._seq || k >= parts.length) { fin(); return; }
+      const p = parts[k++];
+      if (p.texte != null) { this._dire(p.texte, { ...opts, onend: suite }, seq); return; }
+      setTimeout(() => this._son(p.son, seq, () => setTimeout(suite, 150)), 80);
+    };
+    suite();
+  },
+  /* joue un son tenu ; s'il manque, on passe simplement à la suite */
+  _son(file, seq, next) {
+    if (seq !== this._seq) return;
+    const a = new Audio(file);
+    const apres = () => { if (this.audio === a) this.audio = null; if (seq === this._seq) next(); };
+    a.onended = apres;
+    a.onerror = apres;
+    this.audio = a;
+    a.play().catch(apres);
+  },
+  /* une phrase (sans son tenu) : la voix enregistrée de Boulon si elle existe, sinon la synthèse */
+  _dire(text, opts, seq) {
+    const { rate, onend, who = "boulon" } = opts;
+    if (seq !== this._seq) return;
     const file = this.recorded(text, who);
     if (file) {
       if ("speechSynthesis" in window) speechSynthesis.cancel();

@@ -194,8 +194,8 @@ Le jeu de memory existe déjà dans la borne de jeux (moteur commun) : il n'a pa
 
 - **Périodes 3 à 5** en français et en maths (les sons p, t, b, d, ch, ou, on, an…, les nombres
   jusqu'à 100, la monnaie en dirhams).
-- **Les sons isolés** : on pourra les enregistrer avec une vraie voix pour remplacer les mots
-  d'appui.
+- **Les sons isolés [l], [r]** : à enregistrer avec une vraie voix (a, i, o, u, é, è, « mmm » et « sss »
+  sont déjà de vrais sons : `audio/sons/`, voir `outils-voix/LISEZ-MOI.md`).
 - **La voix enregistrée** : lancer les outils de voix avec `-Niveau cp`.
 
 ## Fichiers

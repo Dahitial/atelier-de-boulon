@@ -20,6 +20,13 @@ const NIVEAU = {
   sansNote: true,            // pas de note sur 20 pour l'enfant : seulement des étoiles
   questionsParSeance: 5,     // séances courtes (environ 5 minutes)
 
+  /* les sons que la voix de synthèse dit mal tout seuls : le jeu joue ces enregistrements à la place
+     quand Boulon dit « [a] », « le son « i » », « mmm », « la lettre é »… (outils-voix/fabriquer_sons.py ;
+     [l] et [r] : encore la voix) */
+  sons: { a: "audio/sons/a.ogg", i: "audio/sons/i.ogg", o: "audio/sons/o.ogg", u: "audio/sons/u.ogg",
+          "é": "audio/sons/e-aigu.ogg", "è": "audio/sons/e-grave.ogg",
+          m: "audio/sons/m.ogg", s: "audio/sons/s.ogg" },
+
   /* objets de l'atelier du moteur qui ne servent pas au CP */
   sansObjets: ["horloge", "radio", "conjugueur", "aide", "magneto", "entrainement", "orient", "calculatrice", "carnet", "construction"],
   sansModules: [],

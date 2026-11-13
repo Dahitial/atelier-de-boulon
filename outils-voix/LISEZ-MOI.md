@@ -47,6 +47,23 @@ reconstruction du Setup (journal : `deuxieme_passe.log`). Il suit quatre étapes
 Les consignes qui contiennent des nombres tirés au hasard (années, températures…) ne
 sont pas enregistrées : la voix d'Edge les lit.
 
+## Les sons tenus du CP
+
+La voix de synthèse dit mal un son tout seul : « mmm » devient « èm, èm, èm ». Le CP joue donc de
+vrais sons (`niveaux/cp/audio/sons/*.ogg`) quand Boulon dit « [a] », « le son « i » », « mmm »… :
+le moteur coupe la phrase en morceaux (`Voice.morceaux`, liste des sons dans `NIVEAU.sons`).
+
+`fabriquer_sons.py` refait ces fichiers :
+- voyelles a, i, o, u, é, è : enregistrements de Sartus85 (Lingua Libre, CC BY-SA 4.0), dans
+  `sons-sources/` (é vient du mot « et », è du mot « haie ») ; le script coupe le silence et égalise
+  le volume ;
+- « mmm » et « sss » : fabriqués par calcul (0,75 s ; 1,3 s paraissait trop long à l'écoute).
+
+Une lettre accentuée seule dans la phrase (« La lettre é… ») est aussi remplacée par le vrai son :
+la voix la lisait « hé ». Pas encore de fichier pour [l] et [r] : la voix d'Edge les dit (et les consonnes s'appuient sur
+des mots : lune, lit, lapin). Pour en ajouter un, déposer `<son>.ogg` dans `niveaux/cp/audio/sons/`
+et l'inscrire dans `NIVEAU.sons`.
+
 ## Fichiers utiles
 
 | Fichier | Rôle |
