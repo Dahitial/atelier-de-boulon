@@ -79,6 +79,15 @@ Essais abandonnés, pour mémoire : prolonger les consonnes de Sartus85 par calc
 découper dans le nom des lettres (saccadé), les faire dire par Chatterbox (il invente : on dirait une
 autre langue).
 
+### Les syllabes dites toutes seules
+
+La voix de synthèse lit mal certaines syllabes seules (« pa » devient « P A », « vi » le chiffre romain
+« six »). Elle dit alors un mot qui se prononce pareil, sans changer l'écran : `NIVEAU.prononcer` et
+`NIVEAU.prononcerSeul` (seulement la syllabe toute seule : « me », « ne », « te » sont aussi des mots) dans
+`niveaux/cp/niveau.js`. « bé » et « pé » jouent le nom des lettres B et P. La table a été choisie à
+l'écoute avec `ecouter_syllabes.html` (à ouvrir dans le navigateur des enfants : chaque syllabe telle
+quelle ou avec le mot, on coche ce qui est juste, puis « Copier mes choix »).
+
 ## Fichiers utiles
 
 | Fichier | Rôle |

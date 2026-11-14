@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Écouter les syllabes du CP</title>
+<style>
+  :root { --encre: #2b2236; --papier: #fff8ec; --jaune: #f6c445; --vert: #3fa34d; --rouge: #d64545; }
+  /* le style du jeu (chargé avec lui) bloque le défilement : ici, la page doit défiler */
+  html, body { overflow: auto !important; height: auto !important; min-height: 100%; }
+  body { margin: 0; background: #2e6f73; font-family: "Segoe UI", system-ui, sans-serif; color: var(--encre); }
+  main { max-width: 980px; margin: 24px auto; background: var(--papier); border: 3px solid var(--encre); border-radius: 20px; padding: 20px 24px; }
+  h1 { margin: 0 0 6px; font-size: 28px; }
+  p { margin: 6px 0; font-size: 17px; line-height: 1.4; }
+  .voix { font-weight: 700; }
+  table { width: 100%; border-collapse: collapse; margin-top: 14px; }
+  th, td { padding: 6px 8px; border-bottom: 1px solid #e4d6bd; text-align: left; vertical-align: middle; }
+  th { font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: #6b5a4a; }
+  td.syl { font-size: 30px; font-weight: 800; width: 70px; }
+  button.jouer { font-size: 18px; padding: 6px 12px; border: 2px solid var(--encre); border-radius: 12px; background: var(--jaune); cursor: pointer; }
+  button.jouer:active { transform: scale(.96); }
+  input.mot { font-size: 18px; width: 110px; padding: 5px 8px; border: 2px solid var(--encre); border-radius: 10px; }
+  label.choix { display: inline-flex; align-items: center; gap: 4px; margin-right: 10px; font-size: 15px; cursor: pointer; white-space: nowrap; }
+  tr.ok-brut td { background: #e7f5e9; } tr.ok-mot td { background: #e6f0fb; } tr.aucun td { background: #fbe7e7; }
+  .barre { position: sticky; bottom: 0; background: var(--papier); padding: 12px 0 4px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; border-top: 2px solid var(--encre); margin-top: 14px; }
+  .barre button { font-size: 18px; padding: 8px 16px; border: 2px solid var(--encre); border-radius: 12px; background: var(--vert); color: #fff; cursor: pointer; }
+  #compte { font-size: 16px; }
+  textarea { width: 100%; height: 110px; font-family: Consolas, monospace; font-size: 14px; margin-top: 8px; display: none; }
+</style></head>
+<body>
+<main>
+  <h1>Écouter les syllabes du CP</h1>
+  <p>Pour chaque syllabe, écoute <b>« telle quelle »</b> (ce que Boulon dit aujourd'hui) puis <b>« avec le mot »</b>
+     (Boulon dit un mot qui se prononce pareil ; l'écran du jeu, lui, ne change pas). Coche ce qui est juste.
+     Tu peux changer le mot proposé et le réécouter.</p>
+  <p>Voix utilisée : <span class="voix" id="voix">…</span> — à faire dans le navigateur où les enfants jouent.</p>
+  <table><thead><tr><th>Syllabe</th><th>Telle quelle</th><th>Avec le mot</th><th>Ce qui est juste</th></tr></thead><tbody id="lignes"></tbody></table>
+  <div class="barre">
+    <button id="copier" type="button">📋 Copier mes choix</button>
+    <span id="compte"></span>
+  </div>
+  <textarea id="texte" readonly></textarea>
+</main>
+
+<!-- le jeu du CP chargé sans démarrer : même voix, même vitesse, mêmes corrections que dans le jeu -->
+<script>window.NE_PAS_DEMARRER = true; window.VOICE_FILES = {};</script>
+<script src="../niveaux/cp/niveau.js" charset="utf-8"></script>
+<script src="../modules/liste.js" charset="utf-8"></script>
+<script src="../moteur/charger.js" charset="utf-8"></script>
+<script>
+"use strict";
+Store.load();
+/* les enregistrements du niveau sont rangés par rapport à niveaux/cp/ : on corrige le chemin pour cette page */
+for (const k of ["sons", "lettres", "mots"]) if (NIVEAU[k]) for (const c in NIVEAU[k]) NIVEAU[k][c] = "../niveaux/cp/" + NIVEAU[k][c];
+Voice.init();
+/* les syllabes dites seules au CP (dictées, « Lis la syllabe ») et un mot qui se prononce pareil */
+const PROPOSITIONS = {
+  ba: "bas", da: "da", fa: "fa", la: "la", ma: "ma", na: "na", pa: "pas", ra: "rat", ta: "tas", va: "va",
+  be: "beu", de: "de", fe: "feu", le: "le", me: "meuh", ne: "neu", pe: "peu", re: "reu", te: "teu", ve: "veu",
+  bi: "bie", di: "dit", fi: "fie", li: "lit", mi: "mie", ni: "nid", pi: "pie", ri: "riz", ti: "tie", vi: "vie",
+  bo: "beau", do: "dos", fo: "faux", lo: "lot", mo: "mot", no: "nos", po: "pot", ro: "rot", to: "tôt", vo: "veau",
+  bu: "bu", du: "du", fu: "fût", lu: "lu", mu: "mue", nu: "nu", pu: "pu", ru: "rue", tu: "tu", vu: "vu",
+  "bé": "bée", "dé": "dé", "fé": "fée", "lé": "lée", "mé": "mée", "né": "né", "pé": "pée", "ré": "ré", "té": "thé", "vé": "vée",
+};
+const CLE = "atelier-boulon-ecoute-syllabes";
+let choix = {};
+try { choix = JSON.parse(localStorage.getItem(CLE)) || {}; } catch (e) { choix = {}; }
+const garder = () => { try { localStorage.setItem(CLE, JSON.stringify(choix)); } catch (e) {} majCompte(); };
+
+/* dit la syllabe comme Boulon : telle quelle, ou le mot de remplacement (sans la table du jeu, pour bien comparer) */
+NIVEAU.prononcer = {}; NIVEAU.prononcerSeul = {};
+function dire(syl, mot) { Voice.speak(mot || syl); }
+const lignes = document.getElementById("lignes");
+for (const [syl, prop] of Object.entries(PROPOSITIONS)) {
+  const c = choix[syl] || (choix[syl] = { mot: prop, juste: "" });
+  const tr = document.createElement("tr");
+  const mot = Object.assign(document.createElement("input"), { className: "mot", value: c.mot });
+  mot.addEventListener("input", () => { c.mot = mot.value.trim(); garder(); });
+  const bouton = (titre, f) => { const b = Object.assign(document.createElement("button"), { className: "jouer", type: "button", textContent: titre }); b.onclick = f; return b; };
+  const radios = document.createElement("td");
+  for (const [val, txt] of [["brut", "telle quelle"], ["mot", "avec le mot"], ["aucun", "aucune des deux"]]) {
+    const l = document.createElement("label"); l.className = "choix";
+    const r = Object.assign(document.createElement("input"), { type: "radio", name: "c-" + syl, value: val, checked: c.juste === val });
+    r.onchange = () => { c.juste = val; tr.className = val === "brut" ? "ok-brut" : val === "mot" ? "ok-mot" : "aucun"; garder(); };
+    l.append(r, txt); radios.appendChild(l);
+  }
+  tr.className = c.juste === "brut" ? "ok-brut" : c.juste === "mot" ? "ok-mot" : c.juste === "aucun" ? "aucun" : "";
+  const tdSyl = document.createElement("td"); tdSyl.className = "syl"; tdSyl.textContent = syl;
+  const tdBrut = document.createElement("td"); tdBrut.appendChild(bouton("▶ « " + syl + " »", () => dire(syl, null)));
+  const tdMot = document.createElement("td"); tdMot.append(bouton("▶", () => dire(syl, c.mot)), " ", mot);
+  tr.append(tdSyl, tdBrut, tdMot, radios);
+  lignes.appendChild(tr);
+}
+function majCompte() {
+  const n = Object.values(choix).filter((c) => c.juste).length;
+  document.getElementById("compte").textContent = `${n} / ${Object.keys(PROPOSITIONS).length} syllabes vérifiées`;
+}
+majCompte(); garder();
+document.getElementById("copier").onclick = async () => {
+  const t = Object.entries(choix).map(([s, c]) => `${s} : ${c.juste === "brut" ? "telle quelle" : c.juste === "mot" ? "mot « " + c.mot + " »" : c.juste === "aucun" ? "AUCUNE" : "pas écoutée"}`).join("\n");
+  const zone = document.getElementById("texte"); zone.value = t; zone.style.display = "block"; zone.select();
+  try { await navigator.clipboard.writeText(t); document.getElementById("compte").textContent = "Copié ! Colle-le dans la conversation."; } catch (e) {}
+};
+const v = () => { document.getElementById("voix").textContent = (Voice.voice && Voice.voice.name) || "voix par défaut du navigateur"; };
+v(); if ("speechSynthesis" in window) speechSynthesis.addEventListener("voiceschanged", () => { Voice.refresh(); v(); });
+</script>
+</body></html>

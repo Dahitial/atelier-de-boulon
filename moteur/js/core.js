@@ -307,8 +307,11 @@ const Voice = {
     /* CP : « m + a → ma » se lit « m plus a, ça donne ma » (une vraie phrase, que l'enfant peut redire).
        Pas au CE2 : ses phrases enregistrées (audio/voix.js) sont rangées sous l'ancienne lecture. */
     if (typeof NIVEAU !== "undefined" && NIVEAU.toutEnVoix) {
-      text = String(text).replace(/\s*\+\s*/g, " plus ").replace(/\s*→\s*/g, ", ça nous donne ").replace(/\s*=\s*/g, " égale ");
+      text = String(text).replace(/\s*\+\s*/g, " plus ").replace(/\s*→\s*/g, ", ça nous donne ").replace(/\s*=\s*/g, " égale ")
+        .replace(/(\p{L})-(le|la|les)(?![\p{L}'’])/gu, "$1 $2");      // « écris-le » était lu « écrile »
       /* syllabes que la voix lit de travers (« fu » devient « fou ») : on lui fait dire un mot qui se prononce pareil */
+      const seul = text.trim().replace(/[.!?…]+$/, "").toLowerCase();
+      if (NIVEAU.prononcerSeul && Object.hasOwn(NIVEAU.prononcerSeul, seul)) text = NIVEAU.prononcerSeul[seul];
       for (const [ecrit, dit] of Object.entries(NIVEAU.prononcer || {}))
         text = text.replace(new RegExp(`(?<![\\p{L}'’-])${ecrit}(?![\\p{L}'’-])`, "giu"), dit);
     }

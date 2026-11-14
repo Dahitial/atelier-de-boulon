@@ -32,9 +32,15 @@ const NIVEAU = {
   mots: Object.fromEntries(["zéro", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix", "onze", "douze",
     "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf", "vingt"]
     .flatMap((m, n) => { const f = `audio/mots/${m.replace("é", "e")}.ogg`; return [[m, f], [String(n), f]]; })
-    .concat([["une", "audio/mots/une.ogg"]])),
-  /* ce que la voix lit de travers : elle dit à la place un mot qui se prononce pareil (l'écran ne change pas) */
-  prononcer: { fu: "fût" },
+    .concat([["une", "audio/mots/une.ogg"],
+      /* les syllabes « bé » et « pé » : aucun mot ne passait ; le nom des lettres B et P se dit pareil */
+      ["bé", "audio/lettres/b.ogg"], ["pé", "audio/lettres/p.ogg"]])),
+  /* ce que la voix lit de travers (« pa » devient « P A », « vi » le chiffre romain « six ») : elle dit à la place
+     un mot qui se prononce pareil (l'écran ne change pas). Choisis à l'écoute avec outils-voix/ecouter_syllabes.html.
+     prononcer : partout ; prononcerSeul : seulement la syllabe dite toute seule (« me », « ne », « te » sont aussi
+     des mots de tous les jours : « il me donne »). */
+  prononcer: { pa: "pas", be: "beu", fe: "feu", pe: "peu", re: "reu", ve: "veu", vi: "vie", fo: "faux", lo: "lot", fu: "fût" },
+  prononcerSeul: { me: "meuh", ne: "neu", te: "teu" },
   vitesseVoix: 0.85,          // Boulon parle plus lentement qu'au CE2 : l'enfant apprend à lire
 
   /* objets de l'atelier du moteur qui ne servent pas au CP */
