@@ -23,10 +23,19 @@ const NIVEAU = {
   /* ce que la voix de synthèse dit mal tout seul : le jeu joue ces enregistrements à la place (Voice.morceaux,
      fichiers faits par outils-voix/fabriquer_sons.py) :
      - sons : le SON, pour « [p] », « mmm », « le son « i » »… ;
-     - lettres : le NOM de la lettre, pour une lettre seule dans la phrase (« la lettre pé », « èl et a font la »). */
+     - lettres : le NOM de la lettre, pour une lettre seule dans la phrase (« la lettre pé », « èl et a font la ») ;
+     - mots : un nombre dit TOUT SEUL (la voix dit « un » comme « hein » ; dans une phrase, la voix le garde). */
   sons: Object.fromEntries(["a", "i", "o", "u", "e", "ou", "on", "an", "m", "n", "l", "r", "s", "f", "ch", "v", "j", "p", "b", "t", "d"]
           .map((s) => [s, `audio/sons/${s}.ogg`]).concat([["é", "audio/sons/e-aigu.ogg"], ["è", "audio/sons/e-grave.ogg"]])),
   lettres: Object.fromEntries([..."abcdefghijklmnopqrstuvwxyz"].map((l) => [l, `audio/lettres/${l}.ogg`])),
+  /* les nombres dits tout seuls, de zéro à vingt, en lettres ou en chiffres (« sept », « 7 »), et « une » */
+  mots: Object.fromEntries(["zéro", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix", "onze", "douze",
+    "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf", "vingt"]
+    .flatMap((m, n) => { const f = `audio/mots/${m.replace("é", "e")}.ogg`; return [[m, f], [String(n), f]]; })
+    .concat([["une", "audio/mots/une.ogg"]])),
+  /* ce que la voix lit de travers : elle dit à la place un mot qui se prononce pareil (l'écran ne change pas) */
+  prononcer: { fu: "fût" },
+  vitesseVoix: 0.85,          // Boulon parle plus lentement qu'au CE2 : l'enfant apprend à lire
 
   /* objets de l'atelier du moteur qui ne servent pas au CP */
   sansObjets: ["horloge", "radio", "conjugueur", "aide", "magneto", "entrainement", "orient", "calculatrice", "carnet", "construction"],

@@ -289,8 +289,8 @@ const Voice = {
   init() {
     // les sons et les lettres sont courts : on les charge d'avance, sinon le premier arrive avec du retard
     // et on rejoue ces mêmes lecteurs : un nouveau lecteur recharge le fichier, d'où un blanc avant la lettre
-    if (typeof NIVEAU !== "undefined" && (NIVEAU.sons || NIVEAU.lettres))
-      this._prets = new Map([...Object.values(NIVEAU.sons || {}), ...Object.values(NIVEAU.lettres || {})].map((f) => { const a = new Audio(); a.preload = "auto"; a.src = f; return [f, a]; }));
+    if (typeof NIVEAU !== "undefined" && (NIVEAU.sons || NIVEAU.lettres || NIVEAU.mots))
+      this._prets = new Map([NIVEAU.sons, NIVEAU.lettres, NIVEAU.mots].flatMap((o) => Object.values(o || {})).map((f) => { const a = new Audio(); a.preload = "auto"; a.src = f; return [f, a]; }));
     if (!("speechSynthesis" in window)) return;
     this.refresh();
     speechSynthesis.addEventListener?.("voiceschanged", () => this.refresh());
@@ -304,6 +304,14 @@ const Voice = {
   },
   /* rend le texte agréable à l'oreille */
   clean(text) {
+    /* CP : « m + a → ma » se lit « m plus a, ça donne ma » (une vraie phrase, que l'enfant peut redire).
+       Pas au CE2 : ses phrases enregistrées (audio/voix.js) sont rangées sous l'ancienne lecture. */
+    if (typeof NIVEAU !== "undefined" && NIVEAU.toutEnVoix) {
+      text = String(text).replace(/\s*\+\s*/g, " plus ").replace(/\s*→\s*/g, ", ça nous donne ").replace(/\s*=\s*/g, " égale ");
+      /* syllabes que la voix lit de travers (« fu » devient « fou ») : on lui fait dire un mot qui se prononce pareil */
+      for (const [ecrit, dit] of Object.entries(NIVEAU.prononcer || {}))
+        text = text.replace(new RegExp(`(?<![\\p{L}'’-])${ecrit}(?![\\p{L}'’-])`, "giu"), dit);
+    }
     return String(text)
       .replace(/<[^>]+>/g, " ")
       .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}️]/gu, "")
@@ -331,14 +339,16 @@ const Voice = {
                         ou un son dit tout seul (la dictée « Écoute le son » : « u ») ;
        NIVEAU.lettres : le NOM de la lettre (« pé », « èl »…), joué pour une lettre seule dans la phrase :
                         « La lettre p fait… », « l et a font la », « m + a → ma ».
+       NIVEAU.mots    : un mot ou un nombre dit TOUT SEUL (« un », que la voix dit « hein ») ; dans une phrase,
+                        la voix le garde.
      La phrase est coupée en morceaux : la voix dit le texte, le jeu joue l'enregistrement entre deux.
      Restent à la voix : « a » quand c'est le verbe (« Zigzag a gagné », « il y a »), « y », « à », et une lettre
      après un nombre (« 8 h », « 3 m »).
      Rend [{ texte }] ou [{ texte }, { son: fichier }, …] ; sans rien de reconnu, le texte d'origine tel quel. */
   morceaux(text) {
     const N = typeof NIVEAU !== "undefined" ? NIVEAU : {};
-    if (!N.sons && !N.lettres) return [{ texte: text }];
-    const sons = N.sons || {}, lettres = N.lettres || {};
+    if (!N.sons && !N.lettres && !N.mots) return [{ texte: text }];
+    const sons = N.sons || {}, lettres = N.lettres || {}, mots = N.mots || {};
     const unSon = (x) => {
       x = x.trim().toLowerCase();
       if (/^(.)\1+$/u.test(x)) x = x[0];                  // « mmm » → m
@@ -347,6 +357,7 @@ const Voice = {
     };
     const brut = String(text).replace(/<[^>]+>/g, "");
     const seul = brut.trim().replace(/[.!?…]+$/, "");
+    if (Object.hasOwn(mots, seul.toLowerCase())) return [{ son: mots[seul.toLowerCase()] }];   // « un » dit tout seul
     if (seul.length <= 4 && unSon(seul)) return [{ son: unSon(seul) }];
     /* une lettre seule : son nom (é, è : le son, c'est pareil) ; « a » seulement si c'est bien la lettre */
     const uneLettre = (l, i) => {
@@ -370,7 +381,8 @@ const Voice = {
     }
     if (!parts.length) return [{ texte: text }];
     parts.push({ texte: brut.slice(debut) });
-    return parts.filter((p) => p.son || /[\p{L}\p{N}]/u.test(p.texte));
+    // un morceau sans lettre est sauté, sauf « + » et « → » entre deux lettres (« m + a → ma » : « plus », « ça donne »)
+    return parts.filter((p) => p.son || /[\p{L}\p{N}+→]/u.test(p.texte));
   },
   audio: null,
   speak(text, opts = {}) {
@@ -432,7 +444,8 @@ const Voice = {
       if (seq !== this._seq) return;      // une phrase plus récente a pris la place
       const v = who === "zigzag" ? this.voice2 : this.voice;
       const natural = this.isNatural(v);
-      const speed = Store.data.settings.voiceRate || 1;
+      // le niveau peut ralentir la voix (CP : l'enfant apprend à lire, il faut le temps d'entendre chaque mot)
+      const speed = (Store.data.settings.voiceRate || 1) * ((typeof NIVEAU !== "undefined" && NIVEAU.vitesseVoix) || 1);
       const u = new SpeechSynthesisUtterance(this.clean(text));
       u.lang = (v && v.lang) || "fr-FR";
       if (v) u.voice = v;

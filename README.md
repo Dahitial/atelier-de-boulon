@@ -79,7 +79,7 @@ nouvelle version d'un coup (au plus 10 minutes après), sans mélanger anciens e
   entraînée sur le [SIWIS French Speech Synthesis Database](https://datashare.ed.ac.uk/handle/10283/2353)
   (licence CC BY 4.0).
 - Voix de secours : la synthèse vocale du navigateur (voix de Microsoft Edge et de Windows).
-- Lettres et sons du CP : le nom des 26 lettres et les voyelles sont des enregistrements de Sartus85,
+- Lettres et sons du CP : le nom des 26 lettres, les voyelles et les nombres de zéro à vingt sont des enregistrements de Sartus85,
   projet [Lingua Libre](https://lingualibre.org/), licence [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/),
   via Wikimedia Commons (détail : `outils-voix/sons-sources/CREDITS.txt`). Les sons des consonnes
   (« mmm », « sss », « pe »…) et ou, on, an, e ont été enregistrés pour le jeu par son auteur

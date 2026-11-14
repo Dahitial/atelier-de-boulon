@@ -59,8 +59,9 @@ Restent à la voix : « a » quand c'est le verbe (« Zigzag a gagné », « il 
 lettre après un nombre (« 8 h »).
 
 D'où viennent les fichiers (`fabriquer_sons.py` les refait tous) :
-- le nom des 26 lettres et les voyelles a, i, o, u, é, è : Sartus85 (Lingua Libre, CC BY-SA 4.0),
-  dans `sons-sources/` ;
+- le nom des 26 lettres, les voyelles a, i, o, u, é, è, et les nombres de zéro à vingt dits tout seuls
+  (la voix de synthèse dit « un » comme « hein ») : Sartus85 (Lingua Libre, CC BY-SA 4.0), dans
+  `sons-sources/` ;
 - les consonnes (m, n, l, r, s, f, ch, v, j, p, b, t, d) et ou, on, an, e : enregistrés par l'auteur
   du jeu avec l'enregistreur, dans `sons-sources/voix/` (ils passent avant tout le reste).
 

@@ -3,7 +3,9 @@
 La voix de synthèse dit mal une lettre ou un son tout seul (« mmm » devient « èm, èm, èm », « é » devient
 « hé »). Le jeu joue donc de vrais enregistrements :
 - niveaux/cp/audio/lettres/<x>.ogg : le NOM des 26 lettres (« pé », « èl »…), voix de Sartus85 ;
-- niveaux/cp/audio/sons/<son>.ogg  : le SON (« a », « ou », « mmm », « pe »…).
+- niveaux/cp/audio/sons/<son>.ogg  : le SON (« a », « ou », « mmm », « pe »…) ;
+- niveaux/cp/audio/mots/<mot>.ogg  : un nombre dit tout seul, de zéro à vingt, et « une » (la voix dit
+                                     « un » comme « hein »), Sartus85.
 
 D'où viennent les sons (sons-sources/, détail dans sons-sources/CREDITS.txt) :
 - voix/<son>.wav : un son enregistré avec l'enregistreur (enregistrer_sons.html) : il passe avant tout ;
@@ -35,6 +37,11 @@ VOYELLES = {"a": "lettres/a", "i": "lettres/i", "o": "lettres/o", "u": "lettres/
 # le nom de certaines lettres est pris dans un mot qui se dit pareil : dans « l (lettre) », le « è » est si
 # court qu'on entend surtout « lll » ; le mot « elle » se dit exactement « èl » (choisi à l'écoute).
 LETTRES_MOT = {"l": "elle"}
+# des mots dits TOUT SEULS (niveaux/cp/audio/mots/) : la voix de synthèse dit « un » comme « hein » ; pour que
+# tout reste homogène, tous les nombres de zéro à vingt (et « une ») sont dits par Sartus85 (sons-sources/nombres/)
+NOMBRES = ["zéro", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix", "onze", "douze",
+           "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf", "vingt", "une"]
+MOTS = {m.replace("é", "e"): "nombres/" + m for m in NOMBRES}   # fichier du jeu sans accent : zero.ogg
 VOLUME_PERCU = -27.0
 VOLUME_CALCULE = {"s": -23.0}  # le « sss » fabriqué par calcul garde son réglage validé à l'écoute
 DUREE_MAX = 1.5               # un son enregistré trop long est raccourci (avec un fondu)
@@ -204,8 +211,11 @@ def consonne_m(duree=0.75):
 
 
 def fabriquer():
-    sons, lettres = os.path.join(CP, "sons"), os.path.join(CP, "lettres")
+    sons, lettres, mots = os.path.join(CP, "sons"), os.path.join(CP, "lettres"), os.path.join(CP, "mots")
     faits = {}
+    os.makedirs(mots, exist_ok=True)
+    for nom, src in MOTS.items():                               # les nombres dits tout seuls (Sartus85)
+        faits["mot " + nom] = ecrire_ogg(mots, nom, normaliser(rogner(lire(os.path.join(SRC, src + ".wav")))))
     for x in "abcdefghijklmnopqrstuvwxyz":                      # le nom des lettres (Sartus85)
         src = os.path.join(SRC, LETTRES_MOT[x] + ".wav") if x in LETTRES_MOT else os.path.join(SRC, "lettres", x + ".wav")
         faits["lettre " + x] = ecrire_ogg(lettres, x, normaliser(rogner(lire(src))))
