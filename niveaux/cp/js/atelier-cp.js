@@ -104,12 +104,18 @@ objetAtelier({
     </g>`,
 });
 
+/* le tabouret en bois de la classe : le globe, les sciences et le sablier ont chacun le leur
+   (cx : milieu ; le plateau est à y = 532, les pieds touchent le sol à y = 586) */
+const tabouretClasse = (cx) => `<g stroke="${INK}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="${cx - 67}" y="532" width="134" height="14" rx="5" fill="#a86a2c"/>
+    <path d="M${cx - 53} 546 l-6 40 M${cx + 53} 546 l6 40" stroke-width="5"/></g>`;
+
 objetAtelier({
   id: "monde", ecran: "sommaire", params: { subject: "monde" }, ordre: 230, label: "Le monde",
   desc: "Le globe : tu apprends à te repérer, et tu découvres les paysages du Maroc.",
   etiquette: { x: 250, y: 600, w: 180, texte: "Le monde", couleur: "#3fa34d" },
-  svg: () => `
-    <g transform="translate(80 0)" stroke="${INK}" stroke-width="3" stroke-linejoin="round">
+  svg: () => `${tabouretClasse(330)}
+    <g transform="translate(330 532) scale(0.74) translate(-250 -584)" stroke="${INK}" stroke-width="3" stroke-linejoin="round">
       <path d="M220 584 h60 l-8 -24 h-44 z" fill="#a86a2c"/>
       <line x1="250" y1="560" x2="250" y2="536"/>
       <path d="M196 476 a58 58 0 1 0 108 0" fill="none" stroke="#a86a2c" stroke-width="8"/>
@@ -137,21 +143,26 @@ objetAtelier({
     </g></g>`,
 });
 
-/* Le temps : le grand sablier bleu et vert (le module des inventions lui ajoute le choix
-   « Le temps qui passe » / « Les inventions » : modules/inventions/js/inventions.js) */
+/* Le temps : le petit sablier en bois noir et sable orange, sur son tabouret (le module des inventions lui
+   ajoute le choix « Le temps qui passe » / « Les inventions » : modules/inventions/js/inventions.js) */
 objetAtelier({
   id: "temps", ecran: "sommaire", params: { subject: "temps" }, ordre: 234, label: "Le temps",
   desc: "Le sablier : la journée, la semaine, les saisons, et les inventions d'autrefois.",
   etiquette: { x: 684, y: 600, w: 150, texte: "Le temps", couleur: "#2e6fd6" },
-  svg: () => `<g transform="translate(394 -8)">
+  svg: () => `${tabouretClasse(740)}
+    <g transform="translate(740 532) scale(0.66) translate(-346 -594)">
     <g stroke="${INK}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
       <rect x="296" y="430" width="100" height="16" rx="5" fill="${SABLIER_BOIS}"/>
       <rect x="296" y="578" width="100" height="16" rx="5" fill="${SABLIER_BOIS}"/>
-      <path d="M306 446 v132 M386 446 v132" stroke-width="7"/><path d="M306 446 v132 M386 446 v132" stroke="#4a8be6" stroke-width="3"/>
+      <path d="M302 435 h88 M302 583 h88" stroke="${SABLIER_REFLET}" stroke-width="2.5"/>
+      <path d="M306 446 v132 M386 446 v132" stroke-width="7"/><path d="M306 446 v132 M386 446 v132" stroke="${SABLIER_REFLET}" stroke-width="3"/>
       <path d="M318 446 h56 q0 50 -28 66 q28 16 28 66 h-56 q0 -50 28 -66 q-28 -16 -28 -66 z" fill="#e8f6ff"/>
       <path d="M327 460 h38 q-4 30 -19 42 q-15 -12 -19 -42 z" fill="${SABLIER_SABLE}" stroke="none"/>
+      <path d="M333 464 h14 q-2 14 -8 20 q-5 -8 -6 -20 z" fill="${SABLIER_BRILLE}" stroke="none"/>
       <path d="M346 512 v52" stroke="${SABLIER_SABLE}" stroke-width="3"/>
       <path d="M322 577 q24 -38 48 0 z" fill="${SABLIER_SABLE}" stroke="none"/>
+      <path d="M336 570 q8 -16 16 -18" stroke="${SABLIER_BRILLE}" stroke-width="3" fill="none"/>
+      <path d="M362 452 v18 M366 456 v8" stroke="#ffffff" stroke-width="3"/>
     </g></g>`,
 });
 

@@ -6,8 +6,8 @@ const S = `stroke="${INK}" stroke-width="3" stroke-linejoin="round" stroke-linec
 /* place des décors de la boutique dans l'atelier : { id: "translate(x y) scale(k)" }.
    Vide = la place dessinée dans ATELIER_DECORS (celle de l'atelier du CE2) */
 const PLACE_DECORS = {};
-/* couleurs du sablier du temps (choisies le 11/11/2026) : bois bleu, sable vert */
-const SABLIER_BOIS = "#2e6fd6", SABLIER_SABLE = "#5fb648";
+/* couleurs du sablier du temps (choisies le 14/11/2026) : bois noir, sable orange qui brille un peu */
+const SABLIER_BOIS = "#2a2530", SABLIER_REFLET = "#5d5668", SABLIER_SABLE = "#ff8a1c", SABLIER_BRILLE = "#ffc35c";
 
 /* ---------- Boutique de l'aventure : couleurs et accessoires de Boulon (repère 150 × 170) ---------- */
 const BOULON_COULEURS = {
