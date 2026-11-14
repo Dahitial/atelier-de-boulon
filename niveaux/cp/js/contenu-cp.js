@@ -121,7 +121,7 @@ const CP_LIRE = {
           const son = CP.un(["l", "r"]), [image, answer] = CP.un(CP_POSITIONS[son]);
           return { type: "son-position", consigne: `Où entends-tu le son de la lettre ${son} dans « ${motDe(image)} » ?`, image, son, answer };
         }),
-          lesson: { rule: ["Dis le mot lentement, comme un petit train : chaque morceau est un wagon.", "Le son est-il <b>au début</b>, <b>au milieu</b> ou <b>à la fin</b> du mot ?"], ex: "<b>l</b>une : le son [l] est au début" } },
+          lesson: { rule: ["Dis le mot lentement, comme un petit train : chaque morceau est un wagon.", "Le son est-il <b>au début</b>, <b>au milieu</b> ou <b>à la fin</b> du mot ?"], ex: "<b>l</b>une : le son de la lettre l est au début" } },
         { id: "l1-8", title: "Les rimes", bank: CP.serie(() => {
           const groupe = CP.un(CP_RIMES), [modele, bon] = CP.plusieurs(groupe, 2);
           const autres = CP_RIMES.filter((g) => g !== groupe).map((g) => CP.un(g)), choix = shuffle([bon, ...autres]);
