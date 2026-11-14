@@ -12,6 +12,22 @@ const CP_HOMOPHONES = [["et", "est"], ["a", "à"], ["ou", "où"], ["on", "ont"],
   ["mer", "mère", "maire"], ["sel", "selle"], ["pain", "pin"], ["cou", "coup", "coût"], ["sang", "cent", "sans"]];
 const memeSon = (a, b) => a === b || CP_HOMOPHONES.some((g) => g.includes(a) && g.includes(b));
 
+/* La révision repose telles quelles les questions ratées, gardées dans la sauvegarde de l'élève. Celles
+   gardées avant une correction du jeu ne sont plus reposées (moteur/js/revision.js) :
+   - deux choix qui se disent pareil (« et » et « est ») ;
+   - « Où est le son ? » dont la réponse a changé (vé-lo : « à la fin », et non plus « au milieu »),
+     ou l'ancienne consigne (« le son « l » », lu « lll » au lieu de « èl »). */
+function questionEncoreValide(q) {
+  const choix = (Array.isArray(q.choix) ? q.choix : []).filter((c) => typeof c === "string");
+  if (choix.some((a, i) => choix.some((b, j) => i < j && memeSon(a, b)))) return false;
+  if (q.type === "son-position") {
+    const mot = (CP_POSITIONS[q.son] || []).find(([image]) => image === q.image);
+    if (!mot || mot[1] !== q.answer) return false;
+    if (!/de la lettre/.test(q.consigne)) return false;          // l'ancienne consigne faisait dire « lll »
+  }
+  return true;
+}
+
 const CP = {
   un: (t) => t[Math.floor(Math.random() * t.length)],
   /* n éléments tirés au hasard, jamais deux qui se prononcent pareil (voir CP_HOMOPHONES) */

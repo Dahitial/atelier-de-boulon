@@ -80,10 +80,13 @@ const Revision = {
       return c;
     } catch (e) { return null; }
   },
-  /* une question gardée (ou importée d'une sauvegarde) est-elle utilisable ? */
+  /* une question gardée (ou importée d'une sauvegarde) est-elle utilisable ?
+     Le niveau peut ajouter sa règle (questionEncoreValide, dans ses contenus) : une question gardée avant une
+     correction du jeu (ex. « et » et « est » proposés ensemble, au CP) n'est alors plus reposée. */
   valide(e) {
     return e && typeof e === "object" && typeof e.l === "string" && LESSONS[e.l] && e.q && typeof e.q === "object"
-      && Exercise.types[e.q.type] && typeof e.q.consigne === "string" && !this.DANGER.test(JSON.stringify(e.q));
+      && Exercise.types[e.q.type] && typeof e.q.consigne === "string" && !this.DANGER.test(JSON.stringify(e.q))
+      && (typeof questionEncoreValide !== "function" || questionEncoreValide(e.q) !== false);
   },
   /* garde les questions ratées (ou réussies au 2e essai) d'une série */
   noterErreurs(questions, results) {
