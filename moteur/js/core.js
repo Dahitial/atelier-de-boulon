@@ -288,8 +288,9 @@ const Voice = {
   isMale(v) { return /Henri|Remy|Rémy|Paul|Antoine|Jean|Thierry|Gerard|Fabrice|Claude/i.test(v.name); },
   init() {
     // les sons et les lettres sont courts : on les charge d'avance, sinon le premier arrive avec du retard
+    // et on rejoue ces mêmes lecteurs : un nouveau lecteur recharge le fichier, d'où un blanc avant la lettre
     if (typeof NIVEAU !== "undefined" && (NIVEAU.sons || NIVEAU.lettres))
-      this._prets = Object.values({ ...NIVEAU.sons, ...NIVEAU.lettres }).map((f) => { const a = new Audio(); a.preload = "auto"; a.src = f; return a; });
+      this._prets = new Map([...Object.values(NIVEAU.sons || {}), ...Object.values(NIVEAU.lettres || {})].map((f) => { const a = new Audio(); a.preload = "auto"; a.src = f; return [f, a]; }));
     if (!("speechSynthesis" in window)) return;
     this.refresh();
     speechSynthesis.addEventListener?.("voiceschanged", () => this.refresh());
@@ -386,17 +387,19 @@ const Voice = {
       if (seq !== this._seq || k >= parts.length) { fin(); return; }
       const p = parts[k++];
       if (p.texte != null) { this._dire(p.texte, { ...opts, onend: suite }, seq); return; }
-      setTimeout(() => this._son(p.son, seq, () => setTimeout(suite, 150)), 80);
+      setTimeout(() => this._son(p.son, seq, () => setTimeout(suite, 60)), 20);
     };
     suite();
   },
   /* joue un son tenu ; s'il manque, on passe simplement à la suite */
   _son(file, seq, next) {
     if (seq !== this._seq) return;
-    const a = new Audio(file);
-    const apres = () => { if (this.audio === a) this.audio = null; if (seq === this._seq) next(); };
+    const a = (this._prets && this._prets.get(file)) || new Audio(file);
+    let fait = false;
+    const apres = () => { if (fait) return; fait = true; if (a.onended === apres) a.onended = a.onerror = null; if (this.audio === a) this.audio = null; if (seq === this._seq) next(); };
     a.onended = apres;
     a.onerror = apres;
+    a.currentTime = 0;
     this.audio = a;
     a.play().catch(apres);
   },

@@ -66,10 +66,13 @@ Object.assign(Exercise.types, {
 
   /* ---------- position du son dans le mot ---------- */
   "son-position"(box, q, ctx) {
-    box.appendChild(carteImage(q.image, 170));
+    /* rien n'est dit au survol (déroutant pour l'enfant) : cliquer sur l'image redit le mot */
+    const carte = carteImage(q.image, 170, false);
+    carte.addEventListener("click", () => Voice.speak(motDe(q.image)));
+    box.appendChild(carte);
     const places = ["au début", "au milieu", "à la fin"];
     const wagons = places.map((t, i) => ({
-      cls: "wagon wagon-" + i, aria: t, dire: t,
+      cls: "wagon wagon-" + i, aria: t,
       html: `<span class="wagon-caisse"><span class="wagon-rond"></span></span><span class="wagon-roues"><i></i><i></i></span><small>${t}</small>`,
     }));
     const ctrl = this.choiceButtons(box, q, ctx, wagons, (i) => i === q.answer);

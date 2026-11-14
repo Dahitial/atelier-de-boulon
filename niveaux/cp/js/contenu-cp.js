@@ -92,9 +92,23 @@ const CP_MOTS_OUTILS = ["le", "la", "les", "un", "une", "et", "il", "elle", "dan
 const CP_ECOUTE = Object.keys(PICTOS).filter((n) => !["yeux", "oreille", "nez", "bouche", "main"].includes(n));
 
 /* position d'un son : 0 = au début, 1 = au milieu, 2 = à la fin */
+/* « Où est le son ? » : chaque syllabe est un wagon. Début = 1er wagon, fin = dernier wagon, milieu = un wagon
+   entre les deux (mots de 3 syllabes : sa-la-de). Un mot de 2 syllabes n'a pas de milieu : vé-lo, bal-lon,
+   sou-ris → à la fin. Le e de la fin compte pour un wagon, comme à l'écrit : ta-ble, sa-la-de, po-mme.
+   Pas de mot où le son est dans deux wagons (re-nard, ar-ro-soir), ni à cheval (tor-tue), ni « s » qui
+   se dit [z] (che-mi-se, fu-sée). Les sons de la période 1 : l, r, m, s. */
 const CP_POSITIONS = {
-  l: [["lune", 0], ["lit", 0], ["lapin", 0], ["livre", 0], ["lion", 0], ["ballon", 1], ["salade", 1], ["velo", 1], ["bol", 2], ["cheval", 2], ["table", 2]],
-  r: [["radis", 0], ["robot", 0], ["carotte", 1], ["souris", 1], ["tortue", 1], ["mur", 2], ["tambour", 2]],
+  l: [["lune", 0], ["lit", 0], ["lapin", 0], ["livre", 0], ["lion", 0], ["loup", 0], ["lait", 0],
+      ["salade", 1], ["inv-tele", 1],
+      ["velo", 2], ["ballon", 2], ["melon", 2], ["etoile", 2], ["bol", 2], ["cheval", 2], ["table", 2], ["poule", 2]],
+  r: [["radis", 0], ["robot", 0],
+      ["carotte", 1], ["girafe", 1], ["oreille", 1],
+      ["souris", 2], ["mur", 2], ["tambour", 2], ["canard", 2], ["fleur", 2]],
+  m: [["moto", 0], ["mouton", 0], ["mouche", 0], ["main", 0], ["matin", 0], ["midi", 0], ["montagne", 0],
+      ["tomate", 1], ["domino", 1], ["chemise", 1],
+      ["pomme", 2], ["plume", 2], ["aimant", 2], ["palmier", 2]],
+  s: [["soleil", 0], ["souris", 0], ["savon", 0], ["soir", 0], ["salade", 0],
+      ["cactus", 2], ["poisson", 2], ["tasse", 2], ["poussin", 2], ["pousse", 2]],
 };
 
 /* mots découpés en syllabes (écriture du CP) */
@@ -118,7 +132,7 @@ const CP_LIRE = {
         }),
           lesson: { rule: ["Écoute bien le mot que dit Boulon.", "Regarde les images, puis clique sur la bonne."], ex: "Boulon dit « lune » → je clique sur la lune" } },
         { id: "l1-4", title: "Où est le son ?", bank: CP.serie(() => {
-          const son = CP.un(["l", "r"]), [image, answer] = CP.un(CP_POSITIONS[son]);
+          const son = CP.un(Object.keys(CP_POSITIONS)), [image, answer] = CP.un(CP_POSITIONS[son]);
           return { type: "son-position", consigne: `Où entends-tu le son de la lettre ${son} dans « ${motDe(image)} » ?`, image, son, answer };
         }),
           lesson: { rule: ["Dis le mot lentement, comme un petit train : chaque morceau est un wagon.", "Le son est-il <b>au début</b>, <b>au milieu</b> ou <b>à la fin</b> du mot ?"], ex: "<b>l</b>une : le son de la lettre l est au début" } },
