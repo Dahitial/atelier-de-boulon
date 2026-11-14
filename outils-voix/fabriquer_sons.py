@@ -32,6 +32,9 @@ VOYELLES = {"a": "lettres/a", "i": "lettres/i", "o": "lettres/o", "u": "lettres/
 # volume PERÇU des sons enregistrés (dB, pondération A = sensibilité de l'oreille), le même pour tous :
 # réglés sur le volume brut, ils étaient ~4 dB plus forts que les lettres de Sartus85 (médiane −23 dB A)
 # et inégaux entre eux (mmm, nnn plus faibles que pe, an). −24 paraissait encore fort à l'écoute : −27.
+# le nom de certaines lettres est pris dans un mot qui se dit pareil : dans « l (lettre) », le « è » est si
+# court qu'on entend surtout « lll » ; le mot « elle » se dit exactement « èl » (choisi à l'écoute).
+LETTRES_MOT = {"l": "elle"}
 VOLUME_PERCU = -27.0
 VOLUME_CALCULE = {"s": -23.0}  # le « sss » fabriqué par calcul garde son réglage validé à l'écoute
 DUREE_MAX = 1.5               # un son enregistré trop long est raccourci (avec un fondu)
@@ -204,7 +207,8 @@ def fabriquer():
     sons, lettres = os.path.join(CP, "sons"), os.path.join(CP, "lettres")
     faits = {}
     for x in "abcdefghijklmnopqrstuvwxyz":                      # le nom des lettres (Sartus85)
-        faits["lettre " + x] = ecrire_ogg(lettres, x, normaliser(rogner(lire(os.path.join(SRC, "lettres", x + ".wav")))))
+        src = os.path.join(SRC, LETTRES_MOT[x] + ".wav") if x in LETTRES_MOT else os.path.join(SRC, "lettres", x + ".wav")
+        faits["lettre " + x] = ecrire_ogg(lettres, x, normaliser(rogner(lire(src))))
     for nom, src in VOYELLES.items():                           # les voyelles (Sartus85)
         faits[nom] = ecrire_ogg(sons, nom, normaliser(rogner_doux(lire(os.path.join(SRC, src + ".wav")))))
     faits["m"] = ecrire_ogg(sons, "m", consonne_m())            # par calcul, remplacés ci-dessous si enregistrés
