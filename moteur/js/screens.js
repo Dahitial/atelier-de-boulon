@@ -145,21 +145,29 @@ App.register("exterieur", (root) => {
   root.appendChild(h("button", { class: "icon-btn help", title: "Réglages", "aria-label": "Réglages", onclick: openSettings }, "⚙"));
   root.appendChild(h("button", { class: "btn green abs", style: { left: "50%", bottom: "28px", transform: "translateX(-50%)", fontSize: "28px" }, onclick: () => { Sound.door(); App.go("identif"); } }, "▶ Entrer"));
   const m = App.mascot(root, { x: 830, y: 540 });
-  /* Le navigateur interdit de parler avant que l'enfant ait touché la page : à l'ouverture du jeu, Boulon
-     parle au premier clic (ailleurs que sur la porte, qui change d'écran) ; en revenant de l'atelier, tout de suite. */
+  /* Le navigateur peut interdire de parler avant que l'enfant ait touché la page. Boulon essaie tout de suite ;
+     s'il reste muet, il parle au premier clic (ailleurs que sur la porte, qui change d'écran) et, en attendant,
+     le haut-parleur de sa bulle bat doucement pour inviter à cliquer. */
   const bonjour = "Bonjour ! Je suis Boulon, le petit robot inventeur. Clique sur la porte pour entrer dans mon atelier !";
-  const peutParler = !!(navigator.userActivation && navigator.userActivation.hasBeenActive);
-  setTimeout(() => m.say(bonjour, { speak: peutParler, dy: -20 }), 600);
-  if (!peutParler) {
-    const premier = (e) => {
-      if (e.target.closest && e.target.closest('[data-id="entrer"], button, .modal, .mascot')) return;   // la porte, « Entrer », les réglages, Boulon (qui parle déjà quand on le clique)
-      fin(); m.say(bonjour, { dy: -20 });
-    };
-    const fin = () => { root.removeEventListener("pointerdown", premier); window.removeEventListener("keydown", premier); };
-    root.addEventListener("pointerdown", premier);
-    window.addEventListener("keydown", premier);
-    App.onLeave(fin);
-  }
+  let parti = false;
+  const fin = () => { root.removeEventListener("pointerdown", premier); window.removeEventListener("keydown", premier); };
+  const premier = (e) => {
+    if (e.target && e.target.closest && e.target.closest('[data-id="entrer"], button, .modal, .mascot')) return;   // la porte, « Entrer », les réglages, Boulon (qui parle déjà quand on le clique)
+    fin(); m.say(bonjour, { dy: -20 });
+  };
+  App.onLeave(fin);
+  setTimeout(() => {
+    if (App.current !== "exterieur") return;
+    m.say(bonjour, { dy: -20 });
+    setTimeout(() => {
+      parti = ("speechSynthesis" in window && speechSynthesis.speaking) || !!Voice.audio;
+      if (parti || App.current !== "exterieur" || !m.bubble) return;
+      const hp = m.bubble.querySelector(".reecouter");
+      if (hp) hp.classList.add("invite");
+      root.addEventListener("pointerdown", premier);
+      window.addEventListener("keydown", premier);
+    }, 900);
+  }, 600);
 });
 
 /* ---------------- Identification ---------------- */
