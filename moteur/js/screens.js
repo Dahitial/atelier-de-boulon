@@ -145,7 +145,21 @@ App.register("exterieur", (root) => {
   root.appendChild(h("button", { class: "icon-btn help", title: "Réglages", "aria-label": "Réglages", onclick: openSettings }, "⚙"));
   root.appendChild(h("button", { class: "btn green abs", style: { left: "50%", bottom: "28px", transform: "translateX(-50%)", fontSize: "28px" }, onclick: () => { Sound.door(); App.go("identif"); } }, "▶ Entrer"));
   const m = App.mascot(root, { x: 830, y: 540 });
-  setTimeout(() => m.say("Bonjour ! Je suis Boulon, le petit robot inventeur. Clique sur la porte pour entrer dans mon atelier !", { speak: false, dy: -280 }), 600);
+  /* Le navigateur interdit de parler avant que l'enfant ait touché la page : à l'ouverture du jeu, Boulon
+     parle au premier clic (ailleurs que sur la porte, qui change d'écran) ; en revenant de l'atelier, tout de suite. */
+  const bonjour = "Bonjour ! Je suis Boulon, le petit robot inventeur. Clique sur la porte pour entrer dans mon atelier !";
+  const peutParler = !!(navigator.userActivation && navigator.userActivation.hasBeenActive);
+  setTimeout(() => m.say(bonjour, { speak: peutParler, dy: -20 }), 600);
+  if (!peutParler) {
+    const premier = (e) => {
+      if (e.target.closest && e.target.closest('[data-id="entrer"], button, .modal, .mascot')) return;   // la porte, « Entrer », les réglages, Boulon (qui parle déjà quand on le clique)
+      fin(); m.say(bonjour, { dy: -20 });
+    };
+    const fin = () => { root.removeEventListener("pointerdown", premier); window.removeEventListener("keydown", premier); };
+    root.addEventListener("pointerdown", premier);
+    window.addEventListener("keydown", premier);
+    App.onLeave(fin);
+  }
 });
 
 /* ---------------- Identification ---------------- */
