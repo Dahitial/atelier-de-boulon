@@ -13,7 +13,7 @@
                        { type, consigne, mot: "moto", unites: ["mo", "to"], intrus: ["ma"] }
    compter           : compter des images et choisir le nombre.
                        { type, consigne, image: "pomme", n: 7, choix: [5, 6, 7, 8] }
-   tri               : ranger des images dans des paniers.
+   tri               : ranger des images dans des paniers (glisser-déposer, ou cliquer l'image puis le panier).
                        { type, consigne, paniers: ["vivant", "pas vivant"], objets: [["chat", 0], ["robot", 1]] }
    lis-phrase        : une phrase écrite (que Boulon ne lit qu'après la réponse) et des images ; l'enfant clique sur la bonne.
                        { type, consigne, phrase: "Le chat est sur le lit.", choices: [{ svg }…], answer: 1 }
@@ -105,35 +105,99 @@ Object.assign(Exercise.types, {
     return ctrl;
   },
 
-  /* ---------- ranger des images dans des paniers ---------- */
+  /* ---------- ranger des images dans des paniers ----------
+     On fait glisser une image dans un panier (souris ou doigt), ou on clique l'image puis le panier.
+     Seules les images parlent au survol ; un panier se tait (cliqué sans image choisie, il dit son nom). */
   tri(box, q, ctx) {
     let choisi = null, locked = false;
     const depart = h("div", { class: "tri-depart" });
+    const ranger = (it, k) => {
+      (k < 0 ? depart : paniers[k].zone).appendChild(it.el);
+      it.el.classList.remove("choisi", "wrong", "right"); it.dans = k;
+      if (choisi === it) choisi = null;
+      muetJusqua = performance.now() + 500;      // l'image posée passe sous la souris : pas besoin de la redire
+    };
+    let muetJusqua = 0;
+    let glisse = null, ignorerClic = false;
     const paniers = q.paniers.map((nom, k) => {
       const zone = h("div", { class: "tri-contenu" });
       const p = h("div", { class: "tri-panier panier-" + k, role: "button", tabindex: "0", "aria-label": "Panier : " + nom },
         h("span", { class: "tri-titre", html: ICONE_HAUT_PARLEUR + " " + escapeHtml(nom) }), zone);
-      p.addEventListener("mouseenter", () => { if (NIVEAU.toutEnVoix && !locked) Voice.speak(nom); });
       p.addEventListener("click", () => {
-        if (locked) return;
+        if (locked || ignorerClic) return;         // le clic qui suit un glisser-déposer ne compte pas
         if (!choisi) { Voice.speak(nom); return; }
-        Sound.click(); zone.appendChild(choisi.el); choisi.el.classList.remove("choisi", "wrong"); choisi.dans = k; choisi = null;
+        Sound.click(); ranger(choisi, k);
       });
       p.addEventListener("keydown", (e) => { if (e.target === p && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); p.click(); } });
-      return { el: p, zone };
+      return { el: p, zone, nom };
     });
+    /* glisser-déposer : l'image suit le pointeur (un « fantôme »), le panier visé s'allume */
+    const SEUIL = 8;
+    const cible = (x, y) => {
+      const el = document.elementFromPoint(x, y);
+      const k = paniers.findIndex((p) => p.el.contains(el));
+      return k >= 0 ? k : depart.contains(el) ? -1 : null;
+    };
+    const allumer = (k) => paniers.forEach((p, i) => p.el.classList.toggle("survol", i === k));
+    const finGlisse = (e, poser) => {
+      if (!glisse) return;
+      const { it, fantome } = glisse;
+      glisse = null;
+      fantome.remove(); it.el.classList.remove("en-vol"); allumer(null);
+      if (!poser) return;
+      ignorerClic = true; setTimeout(() => (ignorerClic = false), 0);
+      const k = cible(e.clientX, e.clientY);
+      if (k === null || k === it.dans) return;
+      Sound.click(); ranger(it, k);
+    };
     const items = shuffle(q.objets.map(([nom, k]) => ({ nom, bon: k, dans: -1 })));
     items.forEach((it) => {
       it.el = h("button", { class: "tri-objet", type: "button", "aria-label": motDe(it.nom), html: picto(it.nom, 84) });
-      it.el.addEventListener("mouseenter", () => { if (NIVEAU.toutEnVoix && !locked) Voice.speak(motDe(it.nom)); });
+      it.el.addEventListener("mouseenter", () => { if (NIVEAU.toutEnVoix && !locked && !glisse && performance.now() > muetJusqua) Voice.speak(motDe(it.nom)); });
       it.el.addEventListener("click", (e) => {
         e.stopPropagation();
-        if (locked) return;
+        if (locked || ignorerClic) return;
         Sound.pop();
         if (choisi) choisi.el.classList.remove("choisi");
         choisi = choisi === it ? null : it;
         if (choisi) { it.el.classList.add("choisi"); Voice.speak(motDe(it.nom)); }
       });
+      it.el.addEventListener("pointerdown", (e) => {
+        if (locked || glisse || e.button > 0) return;
+        const x0 = e.clientX, y0 = e.clientY, id = e.pointerId;
+        const bouge = (m) => {
+          if (m.pointerId !== id) return;
+          if (!glisse) {
+            if (Math.hypot(m.clientX - x0, m.clientY - y0) < SEUIL) return;
+            const r = it.el.getBoundingClientRect();
+            const fantome = it.el.cloneNode(true);
+            fantome.classList.remove("choisi", "right", "wrong");
+            fantome.classList.add("tri-fantome");
+            fantome.style.width = r.width + "px"; fantome.style.height = r.height + "px";
+            document.body.appendChild(fantome);
+            glisse = { it, fantome, dx: x0 - r.left, dy: y0 - r.top };
+            if (choisi) { choisi.el.classList.remove("choisi"); choisi = null; }
+            it.el.classList.add("en-vol");
+            Sound.pop();
+            if (m.pointerType !== "mouse") Voice.speak(motDe(it.nom));   // au doigt, pas de survol : on dit le nom
+          }
+          glisse.fantome.style.left = m.clientX - glisse.dx + "px";
+          glisse.fantome.style.top = m.clientY - glisse.dy + "px";
+          const k = cible(m.clientX, m.clientY);
+          allumer(k === null || k < 0 ? null : k);
+        };
+        const fin = (u) => {
+          if (u.pointerId !== id) return;
+          window.removeEventListener("pointermove", bouge);
+          window.removeEventListener("pointerup", fin);
+          window.removeEventListener("pointercancel", fin);
+          finGlisse(u, u.type === "pointerup");
+        };
+        window.addEventListener("pointermove", bouge);
+        window.addEventListener("pointerup", fin);
+        window.addEventListener("pointercancel", fin);
+      });
+      it.el.addEventListener("dragstart", (e) => e.preventDefault());
       depart.appendChild(it.el);
     });
     box.append(depart, h("div", { class: "tri-paniers" }, ...paniers.map((p) => p.el)));
@@ -145,9 +209,9 @@ Object.assign(Exercise.types, {
         items.forEach((it) => { const juste = it.dans === it.bon; it.el.classList.toggle("wrong", !juste); it.el.classList.toggle("right", juste); if (!juste) ok = false; });
         return { ok };
       },
-      reset() { items.forEach((it) => { if (it.dans !== it.bon) { it.dans = -1; it.el.classList.remove("wrong"); depart.appendChild(it.el); } }); },
+      reset() { items.forEach((it) => { if (it.dans !== it.bon) ranger(it, -1); }); },
       reveal() { items.forEach((it) => { paniers[it.bon].zone.appendChild(it.el); it.dans = it.bon; it.el.classList.remove("wrong"); it.el.classList.add("right"); }); },
-      lock() { locked = true; if (choisi) choisi.el.classList.remove("choisi"); },
+      lock() { locked = true; finGlisse(null, false); if (choisi) choisi.el.classList.remove("choisi"); },
       solutionText() { return q.paniers.map((p, k) => `${p} : ${items.filter((it) => it.bon === k).map((it) => motDe(it.nom)).join(", ")}`).join(" ; "); },
     };
   },
