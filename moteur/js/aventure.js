@@ -55,8 +55,9 @@ const AVENTURE_MEDAILLES = [
   { id: "ruse", icone: "🦊", nom: "Plus rusé que Zigzag", desc: "Bats Zigzag au défi.", ok: (u) => nbVictoires(u) >= 1 },
   { id: "champion", icone: "🥇", nom: "Champion", desc: "Bats Zigzag 10 fois.", ok: (u) => nbVictoires(u) >= 10 },
   { id: "boussole", icone: "🧭", nom: "Bien orienté", desc: "Fais le test de la boussole.", ok: (u) => !!u.orient },
-  { id: "regulier", icone: "📅", nom: "Régulier", desc: "Viens travailler 3 jours de suite.", ok: (u) => (Aventure.etat(u).serieMax || 0) >= 3 },
-  { id: "assidu", icone: "🔥", nom: "Assidu", desc: "Viens travailler 7 jours de suite.", ok: (u) => (Aventure.etat(u).serieMax || 0) >= 7 },
+  /* la série compte les rendez-vous choisis par le parent (jours, semaines…) : le texte suit son réglage */
+  { id: "regulier", icone: "📅", nom: "Régulier", get desc() { return `Viens travailler ${Aventure.serieTexte(3)} de suite.`; }, ok: (u) => (Aventure.etat(u).serieMax || 0) >= 3 },
+  { id: "assidu", icone: "🔥", nom: "Assidu", get desc() { return `Viens travailler ${Aventure.serieTexte(7)} de suite.`; }, ok: (u) => (Aventure.etat(u).serieMax || 0) >= 7 },
   { id: "premier-achat", icone: "🛍️", nom: "Premier achat", desc: "Achète un objet dans la boutique.", ok: (u) => Object.keys(Aventure.etat(u).achats).length >= 1 },
   { id: "decorateur", icone: "🏠", nom: "Décorateur", desc: "Achète 5 objets dans la boutique.", ok: (u) => Object.keys(Aventure.etat(u).achats).length >= 5 },
 ];
@@ -73,8 +74,17 @@ function retirerMedailles(ids) {
   for (let i = AVENTURE_MEDAILLES.length - 1; i >= 0; i--) if (ids.includes(AVENTURE_MEDAILLES[i].id)) AVENTURE_MEDAILLES.splice(i, 1);
 }
 
+/* les dates des visites : numéro du jour, lundi de la semaine (AAAA-MM-JJ) */
+const avNumJour = (d) => Math.round(Date.parse(d + "T12:00:00") / 864e5);
+const avLundi = (d) => { const t = Date.parse(d + "T12:00:00"); return new Date(t - ((new Date(t).getDay() + 6) % 7) * 864e5).toISOString().slice(0, 10); };
+
+/* Une VISITE = un jour où l'enfant vient jouer (plusieurs fois le même jour ne comptent qu'une fois).
+   Le temps du jeu avance aux visites, pas au calendrier : un enfant qui vient une fois par semaine ne
+   perd rien pendant son absence. La série compte les rendez-vous tenus selon le rythme choisi par le
+   parent (Parents.reglages().rythme) : "semaine" (par défaut : une visite par semaine), "jour" (tous les
+   jours) ou "jours" (certains jours de la semaine, joursSemaine : 0 = dimanche … 6 = samedi). */
 const Aventure = {
-  PLAFOND_JOUR: 40,    // écrous « répétables » (séries, révisions, défis) gagnés au plus par jour
+  PLAFOND_SEMAINE: 120,  // écrous « répétables » (séries, révisions, défis) gagnés au plus par semaine
   BONUS_MEDAILLE: 10,
   _file: [],           // messages à afficher
 
@@ -82,10 +92,10 @@ const Aventure = {
   etat(u) {
     if (!u.aventure || typeof u.aventure !== "object") u.aventure = {};
     const a = u.aventure;
-    for (const k of ["ecrous", "total", "corrigees", "serie", "serieMax", "gainsJour"]) if (typeof a[k] !== "number" || !(a[k] >= 0)) a[k] = 0;
+    for (const k of ["ecrous", "total", "corrigees", "serie", "serieMax", "gainsSemaine", "visites"]) if (typeof a[k] !== "number" || !(a[k] >= 0)) a[k] = 0;
     for (const k of ["achats", "places", "medailles", "porte"]) if (!a[k] || typeof a[k] !== "object" || Array.isArray(a[k])) a[k] = {};
     if (typeof a.dernierJour !== "string") a.dernierJour = "";
-    if (typeof a.jourGains !== "string") a.jourGains = "";
+    for (const k of ["semaineGains", "serieRythme"]) if (typeof a[k] !== "string") a[k] = "";
     return a;
   },
   /* style de Boulon pour l'élève connecté (lu par Art.boulon) */
@@ -102,14 +112,14 @@ const Aventure = {
   },
 
   /* ---------- gains ---------- */
-  /* repetable : soumis au plafond du jour */
+  /* repetable : soumis au plafond de la semaine (la durée de séance du parent évite la séance sans fin) */
   gagner(u, n, raison, repetable = false) {
     const a = this.etat(u);
     if (repetable) {
-      const auj = Revision.jour(0);
-      if (a.jourGains !== auj) { a.jourGains = auj; a.gainsJour = 0; }
-      n = Math.max(0, Math.min(n, this.PLAFOND_JOUR - a.gainsJour));
-      a.gainsJour += n;
+      const lundi = avLundi(Revision.jour(0));
+      if (a.semaineGains !== lundi) { a.semaineGains = lundi; a.gainsSemaine = 0; }
+      n = Math.max(0, Math.min(n, this.PLAFOND_SEMAINE - a.gainsSemaine));
+      a.gainsSemaine += n;
     }
     if (n <= 0) return 0;
     const avant = this.rang(a.total).i;
@@ -119,14 +129,56 @@ const Aventure = {
     if (r.i > avant) this._file.push({ txt: `${r.icone} Nouveau rang : ${r.nom} !`, grand: true });
     return n;
   },
-  /* bonus du premier passage de la journée et série de jours */
+  /* ---------- visites et série ---------- */
+  rythme() {
+    const p = typeof Parents !== "undefined" ? Parents.reglages() : {};
+    return { rythme: ["jour", "jours", "semaine"].includes(p.rythme) ? p.rythme : "semaine", jours: Array.isArray(p.joursSemaine) ? p.joursSemaine : [] };
+  },
+  cleRythme(R) { return R.rythme + (R.rythme === "jours" ? ":" + R.jours.join("") : ""); },
+  /* « 3 semaines », « 3 jours », « 3 rendez-vous » */
+  serieTexte(n) {
+    const r = this.rythme().rythme;
+    return r === "jour" ? `${n} jour${n > 1 ? "s" : ""}` : r === "semaine" ? `${n} semaine${n > 1 ? "s" : ""}` : `${n} rendez-vous`;
+  },
+  /* « demain », « la semaine prochaine », « au prochain rendez-vous » */
+  prochainRdv() { const r = this.rythme().rythme; return r === "jour" ? "demain" : r === "semaine" ? "la semaine prochaine" : "au prochain rendez-vous"; },
+  /* la série après une visite le jour d, la visite précédente étant le jour « avant » (ou "") */
+  serieApres(serie, avant, d, R) {
+    if (!avant) return R.rythme === "jours" && !R.jours.includes(new Date(d + "T12:00:00").getDay()) ? 0 : 1;
+    if (R.rythme === "jour") return avNumJour(d) - avNumJour(avant) === 1 ? serie + 1 : 1;
+    if (R.rythme === "semaine") {
+      const k = Math.round((avNumJour(avLundi(d)) - avNumJour(avLundi(avant))) / 7);
+      return k === 0 ? Math.max(1, serie) : k === 1 ? serie + 1 : 1;
+    }
+    /* certains jours : un jour prévu manqué casse la série ; venir un autre jour ne la casse pas, ne l'allonge pas */
+    const prevu = (n) => R.jours.includes(new Date(n * 864e5 + 432e5).getUTCDay());
+    let manque = false;
+    for (let n = avNumJour(avant) + 1; n < avNumJour(d) && !manque; n++) manque = prevu(n);
+    const base = manque ? 0 : serie;
+    return prevu(avNumJour(d)) ? base + 1 : base;
+  },
+  /* au changement de rythme (et la première fois) : la série est recalculée sur le journal des visites */
+  recalculerSerie(u, R) {
+    const a = this.etat(u), auj = Revision.jour(0);
+    const jours = new Set(a.dernierJour && a.dernierJour < auj ? [a.dernierJour] : []);
+    if (typeof Journal !== "undefined") for (const [d, v] of Object.entries(Journal.etat(u).jours)) if (d < auj && (v.min > 0 || v.series > 0)) jours.add(d);
+    let serie = 0, avant = "";
+    for (const d of [...jours].sort()) { serie = this.serieApres(serie, avant, d, R); avant = d; }
+    a.serie = serie;
+    if (avant) a.dernierJour = avant;
+    a.serieRythme = this.cleRythme(R);
+  },
+  /* bonus de la première visite du jour et série de rendez-vous */
   journee(u) {
     const a = this.etat(u), auj = Revision.jour(0);
     if (a.dernierJour === auj) return;
-    a.serie = a.dernierJour === Revision.jour(-1) ? a.serie + 1 : 1;
+    const R = this.rythme();
+    if (a.serieRythme !== this.cleRythme(R)) this.recalculerSerie(u, R);
+    a.serie = this.serieApres(a.serie, a.dernierJour, auj, R);
     a.serieMax = Math.max(a.serieMax, a.serie);
     a.dernierJour = auj;
-    this.gagner(u, 3 + Math.min(a.serie, 7), a.serie > 1 ? `${a.serie} jours de suite !` : "bonus du jour");
+    a.visites += 1;
+    this.gagner(u, 3 + Math.min(a.serie, 7), a.serie > 1 ? `${this.serieTexte(a.serie)} de suite !` : "bonus de la visite");
   },
   /* médailles nouvellement gagnées */
   verifier(u) {
@@ -263,8 +315,9 @@ const Aventure = {
     const porte = {};
     for (const t of ["tete", "yeux", "cou", "couleur"]) if (a.porte && ids.has(a.porte[t])) porte[t] = a.porte[t];
     return {
-      ecrous: n(a.ecrous), total: n(a.total), corrigees: n(a.corrigees), serie: n(a.serie), serieMax: n(a.serieMax), gainsJour: n(a.gainsJour),
-      dernierJour: /^\d{4}-\d\d-\d\d$/.test(a.dernierJour) ? a.dernierJour : "", jourGains: /^\d{4}-\d\d-\d\d$/.test(a.jourGains) ? a.jourGains : "",
+      ecrous: n(a.ecrous), total: n(a.total), corrigees: n(a.corrigees), serie: n(a.serie), serieMax: n(a.serieMax), gainsSemaine: n(a.gainsSemaine), visites: n(a.visites),
+      dernierJour: /^\d{4}-\d\d-\d\d$/.test(a.dernierJour) ? a.dernierJour : "", semaineGains: /^\d{4}-\d\d-\d\d$/.test(a.semaineGains) ? a.semaineGains : "",
+      serieRythme: typeof a.serieRythme === "string" ? a.serieRythme.slice(0, 20) : "",
       demarre: !!a.demarre,
       achats: map(a.achats, (k) => ids.has(k), (v) => String(v).slice(0, 10)),
       places: map(a.places, (k) => ids.has(k), () => true),
@@ -317,7 +370,7 @@ App.register("aventure", (root, params) => {
     h("div", { class: "av-barre", title: `${a.total} écrous gagnés en tout` }, h("i", { style: { width: prog + "%" } })),
     h("p", { class: "av-suivant" }, r.suivant ? `Encore ${r.suivant.min - a.total} 🔩 pour devenir ${r.suivant.nom}` : "Tu as atteint le plus haut rang !"),
     h("div", { class: "av-ecrous" }, h("span", null, "🔩"), h("b", null, String(a.ecrous)), h("small", null, "écrou" + (a.ecrous > 1 ? "s" : "") + " à dépenser")),
-    h("p", { class: "av-serie" }, a.serie > 1 ? `🔥 ${a.serie} jours de suite` : "📅 Reviens demain pour une série !"));
+    h("p", { class: "av-serie" }, a.serie > 1 ? `🔥 ${Aventure.serieTexte(a.serie)} de suite` : `📅 Reviens ${Aventure.prochainRdv()} pour une série !`));
   root.appendChild(gauche);
 
   /* panneau de droite : boutique ou médailles */

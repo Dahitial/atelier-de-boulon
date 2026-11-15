@@ -1,13 +1,16 @@
 /* L'Atelier de Boulon — Mon petit jardin (pour tous les niveaux).
    On l'ouvre en achetant le pot de fleurs dans la boutique. L'enfant achète une graine, la
-   plante, l'arrose et la regarde pousser au fil des jours où il vient jouer.
+   plante, l'arrose et la regarde pousser au fil de ses VISITES.
 
-   Les règles du temps :
-   - une journée de croissance = un jour du calendrier où l'enfant vient, et où sa plante a de
-     l'eau. Venir plusieurs fois le même jour ne compte qu'une fois ;
-   - l'arrosage remplit la réserve (3 gouttes), une fois par jour ; elle baisse d'une goutte par jour ;
-   - sans arrosage depuis 2 jours, la plante a soif ; 4 jours : elle fane (un arrosage la sauve,
-     mais elle perd une étape) ; 7 jours : elle meurt et part au compost ;
+   Les règles du temps (tout se compte en visites : un jour où l'enfant vient jouer ; venir plusieurs
+   fois le même jour ne compte qu'une fois ; pendant son absence, rien ne change) :
+   - la plante pousse d'une étape de croissance à chaque visite où elle a encore de l'eau ;
+   - l'arrosage remplit la réserve (3 gouttes), une fois par visite ; elle baisse d'une goutte par visite ;
+   - 2 visites sans arrosage : la plante a soif ; 3 et 4 : elle est fanée et ne pousse plus (un
+     arrosage la sauve, mais elle perd une étape) ; à la 5e : elle meurt ;
+   - au compost, Boulon explique pourquoi (l'eau, la lumière, la terre) ; 2 visites plus tard, le
+     compost est un terreau qui donne une étape d'avance à la plante suivante ;
+   - l'oranger planté dehors pousse à chaque visite et ne meurt jamais (la pluie l'arrose) ;
    - le mode vacances (protégé par le code parent) arrête le temps du jardin.
 
    Les leçons sur les plantes débloquent des graines : chaque niveau le dit dans
@@ -55,7 +58,7 @@ const jourPlus = (d, n) => new Date(Date.parse(d + "T12:00:00") + n * 864e5).toI
 /* L'état du jardin de l'élève                                         */
 /* ------------------------------------------------------------------ */
 const Jardin = {
-  SOIF: 2, FANEE: 4, MORTE: 7,
+  SOIF: 2, FANEE: 3, MORTE: 5, COMPOST: 2,   // en visites
   etat(u) {
     if (!u.jardin || typeof u.jardin !== "object") u.jardin = {};
     const j = u.jardin;
@@ -66,8 +69,15 @@ const Jardin = {
     return j;
   },
   aLePot(u) { const a = Aventure.etat(u); return !!(a.achats.pot); },
-  /* jours depuis le dernier arrosage (le temps des vacances ne compte pas) */
-  sec(p, auj = Revision.jour(0)) { return Math.max(0, joursEntre(p.arroseLe, auj)); },
+  /* visites depuis le dernier arrosage */
+  sec(p) { return Math.max(0, Number(p.secV) || 0); },
+  /* les visites (jours où l'enfant a joué) après le jour d et avant aujourd'hui : pour les anciennes
+     sauvegardes, qui comptaient en jours du calendrier */
+  visitesDepuis(u, d) {
+    const auj = Revision.jour(0);
+    if (!d || typeof Journal === "undefined") return 0;
+    return Object.entries(Journal.etat(u).jours).filter(([k, v]) => k > d && k < auj && (v.min > 0 || v.series > 0)).length;
+  },
   /* ok, soif, fanee ou morte */
   sante(p) {
     if (!p) return null;
@@ -86,19 +96,31 @@ const Jardin = {
     const lecon = JARDIN_DEBLOCAGES[esp];
     return !lecon || !LESSONS[lecon] || !!(u.lessons && u.lessons[lecon]);
   },
-  /* à chaque visite (atelier ou jardin) : la mort, la pousse du jour, l'arbre dehors */
+  /* à chaque visite (atelier ou jardin) : la soif, la mort, la pousse, le compost, l'arbre dehors */
   maj(u) {
     const j = this.etat(u), auj = Revision.jour(0), p = j.plante;
     if (j.vacances) return;
+    /* ancienne sauvegarde (en jours) : on compte les visites depuis le dernier arrosage */
+    if (p && typeof p.secV !== "number") { p.secV = this.visitesDepuis(u, p.arroseLe); p.vu = p.arroseLe === auj ? auj : ""; }
+    /* une nouvelle visite : la réserve d'eau baisse d'une goutte */
+    if (p && !p.morte && p.vu !== auj) { if (p.arroseLe !== auj) p.secV += 1; p.vu = auj; }
     if (p && !p.morte && this.sec(p) >= this.MORTE) p.morte = true;
-    /* la plante pousse une fois par jour de visite, si elle a de l'eau (pas encore assoiffée au point d'être sèche) */
-    if (p && !p.morte && p.dernierePousse !== auj && this.sec(p) < 3 && !this.fini(p)) {
+    /* le compost mûrit à chaque visite : au bout de COMPOST visites, c'est du terreau */
+    if (j.vu !== auj) {
+      j.vu = auj;
+      if (typeof j.compostVisites === "number" && ++j.compostVisites >= this.COMPOST) {
+        delete j.compostVisites; j.compost++;
+        Aventure._file.push({ txt: "♻️ Ton compost est prêt : du bon terreau pour ta prochaine plante !", grand: true });
+      }
+    }
+    /* la plante pousse une fois par visite, si elle a de l'eau (pas encore fanée) */
+    if (p && !p.morte && p.dernierePousse !== auj && this.sec(p) < this.FANEE && !this.fini(p)) {
       p.dernierePousse = auj;
       p.demi = p.place === "ombre" ? !p.demi : false;   // à l'ombre, elle pousse un jour sur deux
       if (!p.demi) p.jours += 1;
-      if (p.place === "ombre" && p.demi) { /* jour sans pousse : la plante attend la lumière */ }
+      if (p.place === "ombre" && p.demi) { /* visite sans pousse : la plante attend la lumière */ }
     }
-    /* l'arbre planté dehors : la pluie l'arrose, il pousse à chaque jour de visite */
+    /* l'arbre planté dehors : la pluie l'arrose, il pousse à chaque visite et ne meurt jamais */
     if (j.arbre && j.arbre.dernierePousse !== auj) {
       j.arbre.dernierePousse = auj; j.arbre.jours += 1;
       if (j.arbre.jours >= JARDIN_ESPECES.oranger.dehors && !j.herbier.oranger) {
@@ -125,7 +147,9 @@ const Jardin = {
     j.graines[esp]--;
     const terreau = j.compost > 0;
     if (terreau) j.compost--;
-    j.plante = { espece: esp, plantee: auj, jours: terreau ? 1 : 0, arroseLe: auj, dernierePousse: auj, place: "fenetre", engrais: false, terreau };
+    /* le terreau du compost : une étape d'avance */
+    j.plante = { espece: esp, plantee: auj, jours: terreau ? JARDIN_ESPECES[esp].jours / 5 : 0, arroseLe: auj, dernierePousse: auj, vu: auj, secV: 0,
+      place: "fenetre", engrais: false, terreau };
     this.noterArrosage(j, auj);
     Store.save();
     return true;
@@ -145,7 +169,7 @@ const Jardin = {
       p.jours = Math.max(0, p.jours - E.jours / 5);   // elle perd une étape…
       p.dernierePousse = auj;                         // … et ne pousse pas aujourd'hui
     }
-    p.arroseLe = auj;
+    p.arroseLe = auj; p.secV = 0;
     this.noterArrosage(j, auj);
     this.maj(u);
     return fanee ? "sauvee" : "ok";
@@ -169,12 +193,15 @@ const Jardin = {
     Aventure.conclure(u);
     return esp;
   },
+  /* la plante morte part au compost : il sera prêt dans COMPOST visites. Renvoie ce qui lui a manqué. */
   composter(u) {
-    const j = this.etat(u);
-    if (!j.plante || this.sante(j.plante) !== "morte") return false;
-    j.plante = null; j.compost++;
+    const j = this.etat(u), p = j.plante;
+    if (!p || this.sante(p) !== "morte") return false;
+    const manque = { eau: true, lumiere: p.place === "ombre" };
+    j.plante = null;
+    j.compostVisites = 0;
     Store.save();
-    return true;
+    return manque;
   },
   /* vacances : on arrête le temps ; au retour, les dates sont décalées d'autant */
   vacances(u, oui) {
@@ -196,7 +223,8 @@ const Jardin = {
       espece: o.plante.espece, plantee: date(o.plante.plantee) || Revision.jour(0), jours: n(o.plante.jours),
       arroseLe: date(o.plante.arroseLe) || Revision.jour(0), dernierePousse: date(o.plante.dernierePousse), place: o.plante.place === "ombre" ? "ombre" : "fenetre",
       engrais: !!o.plante.engrais, terreau: !!o.plante.terreau, demi: !!o.plante.demi, morte: !!o.plante.morte,
-      observeLe: date(o.plante.observeLe), soinLe: date(o.plante.soinLe) } : null;
+      observeLe: date(o.plante.observeLe), soinLe: date(o.plante.soinLe),
+      ...(typeof o.plante.secV === "number" ? { secV: n(o.plante.secV), vu: date(o.plante.vu) || "" } : {}) } : null;
     return {
       plante: p,
       graines: Object.fromEntries(Object.entries(o.graines || {}).filter(([k]) => esp(k)).map(([k, v]) => [k, n(v)])),
@@ -205,6 +233,8 @@ const Jardin = {
       arrosages: (Array.isArray(o.arrosages) ? o.arrosages : []).filter(date).slice(-14),
       arbre: o.arbre && typeof o.arbre === "object" ? { jours: n(o.arbre.jours), plante: date(o.arbre.plante), dernierePousse: date(o.arbre.dernierePousse) } : null,
       compost: n(o.compost), joursArroses: n(o.joursArroses),
+      ...(typeof o.compostVisites === "number" ? { compostVisites: n(o.compostVisites) } : {}),
+      vu: date(o.vu) || undefined,
       vacances: date(o.vacances) || undefined,
     };
   },
@@ -387,9 +417,9 @@ App.register("jardin", (root, params) => {
     actions.append(
       btn("sky", "💧 Arroser", () => {
         const r = Jardin.arroser(u);
-        if (r === "deja") { Sound.bad(); dire("La terre est déjà mouillée ! Trop d'eau fait pourrir les racines. Reviens demain."); return; }
+        if (r === "deja") { Sound.bad(); dire("La terre est déjà mouillée ! Trop d'eau fait pourrir les racines. Tu l'arroseras à ta prochaine visite."); return; }
         Sound.good(); Aventure.conclure(u);
-        if (r === "sauvee") { App.go("jardin"); setTimeout(() => dire("Ouf ! Tu l'as sauvée, mais elle a perdu une étape. Arrose-la tous les jours !"), 400); }
+        if (r === "sauvee") { App.go("jardin"); setTimeout(() => dire("Ouf ! Tu l'as sauvée, mais elle a perdu une étape. Arrose-la à chaque visite !"), 400); }
         else App.go("jardin", { arrose: true });
       }, !j.vacances),
       btn("white", "🔍 Observer", () => observer(), p.observeLe !== auj && !j.vacances),
@@ -409,7 +439,7 @@ App.register("jardin", (root, params) => {
       App.go("jardin", { recolte: r });
     }));
   } else if (p && p.morte) {
-    actions.appendChild(btn("white", "♻️ La mettre au compost", () => { Jardin.composter(u); Sound.click(); App.go("jardin", { compost: true }); }));
+    actions.appendChild(btn("white", "♻️ La mettre au compost", () => { const manque = Jardin.composter(u); Sound.click(); App.go("jardin", { compost: manque }); }));
   }
   scene.appendChild(actions);
   root.appendChild(scene);
@@ -501,7 +531,7 @@ App.register("jardin", (root, params) => {
         [...zone.children].forEach((x) => { x.disabled = true; if (x.textContent === bonne) x.classList.add("right"); });
         p.observeLe = auj; Store.save();
         if (c === bonne) { Sound.good(); Aventure.gagner(u, 2, "bonne observation"); Aventure.conclure(u); dire("Bien observé ! Tu es un vrai jardinier."); }
-        else { Sound.bad(); b.classList.add("wrong"); dire(`Pas tout à fait : c'était « ${bonne} ». Observe-la encore demain !`); }
+        else { Sound.bad(); b.classList.add("wrong"); dire(`Pas tout à fait : c'était « ${bonne} ». Observe-la encore à ta prochaine visite !`); }
       });
       zone.appendChild(b);
     });
@@ -511,17 +541,23 @@ App.register("jardin", (root, params) => {
 
   /* ----- ce que dit Boulon ----- */
   let msg;
+  const compostEnCours = typeof j.compostVisites === "number";
   if (j.vacances) msg = "Le jardin est en vacances : ta plante t'attend sans souci.";
-  else if (!p) msg = Object.values(j.graines).some((n) => n > 0) ? "Clique sur « Planter » sous une graine pour la mettre dans le pot !"
-    : "Ton pot est prêt ! Achète une graine en bas : le radis et la menthe poussent vite.";
+  /* la leçon du compost : ce qui a manqué à la plante, et ce que devient le compost */
+  else if (params.compost) msg = "Une plante a besoin de trois choses pour vivre : de l'eau, de la lumière et une bonne terre. "
+    + (params.compost.lumiere ? "La tienne a manqué d'eau, et de lumière dans le coin sombre. " : "La tienne a manqué d'eau. ")
+    + "Au compost, elle va se transformer en terreau : dans deux visites, il nourrira ta prochaine plante, qui aura une étape d'avance.";
+  else if (!p) msg = (compostEnCours ? `Ton compost se prépare : il sera prêt ${Jardin.COMPOST - j.compostVisites > 1 ? "dans deux visites" : "à ta prochaine visite"}. ` : "")
+    + (Object.values(j.graines).some((n) => n > 0) ? "Clique sur « Planter » sous une graine pour la mettre dans le pot !"
+      : "Ton pot est prêt ! Achète une graine en bas : le radis et la menthe poussent vite.");
   else if (p.morte) msg = `Oh non… ${E.nom} n'a pas eu d'eau pendant trop longtemps. Mets-la au compost : la prochaine plante poussera mieux grâce au terreau.`;
   else if (Jardin.fini(p)) msg = p.espece === "oranger" ? "Ton oranger est un jeune arbre : il est trop grand pour le pot ! Plante-le dehors, devant la maison."
-    : `${E.nom.charAt(0).toUpperCase() + E.nom.slice(1)} a fini de pousser ! Récolte-la : tu gagneras des graines pour en replanter.`;
+    : `${E.nom.charAt(0).toUpperCase() + E.nom.slice(1)} a fini de pousser ! Récolte-${E.nom.startsWith("le ") ? "le" : "la"} : tu gagneras des graines pour en replanter.`;
   else if (sante === "fanee") msg = "Vite, ta plante est fanée ! Arrose-la pour la sauver.";
   else if (sante === "soif") msg = "Ta plante a soif : ses feuilles tombent. Arrose-la !";
-  else if (p.arroseLe !== auj) msg = "Ta plante va bien. Pense à l'arroser aujourd'hui !";
+  else if (p.arroseLe !== auj) msg = "Ta plante va bien. Pense à l'arroser pendant ta visite !";
   else if (p.place === "ombre") msg = "Ta plante est dans le coin sombre : sans lumière, elle pousse lentement et pâlit. Remets-la près de la fenêtre !";
-  else msg = `Ta plante est arrosée. Reviens demain : elle passera peut-être à l'étape suivante. ${E.vrai}`;
+  else msg = `Ta plante est arrosée. À ta prochaine visite, elle passera peut-être à l'étape suivante. ${E.vrai}`;
   setTimeout(() => dire(msg), 300);
 });
 
@@ -662,5 +698,5 @@ MAISON_AJOUTS.push((u) => {
 ajouterMedailles([
   { id: "main-verte", icone: "🌻", nom: "Main verte", desc: "Fais pousser une plante jusqu'au bout.", ok: (u) => Object.keys((u.jardin && u.jardin.herbier) || {}).length >= 1 },
   { id: "botaniste", icone: "📗", nom: "Botaniste", desc: "Remplis 5 fiches de l'herbier.", ok: (u) => Object.keys((u.jardin && u.jardin.herbier) || {}).length >= 5 },
-  { id: "jardinier-fidele", icone: "💧", nom: "Jardinier fidèle", desc: "Arrose ta plante 10 jours différents.", ok: (u) => ((u.jardin && u.jardin.joursArroses) || 0) >= 10 },
+  { id: "jardinier-fidele", icone: "💧", nom: "Jardinier fidèle", desc: "Arrose ta plante pendant 10 visites.", ok: (u) => ((u.jardin && u.jardin.joursArroses) || 0) >= 10 },
 ]);

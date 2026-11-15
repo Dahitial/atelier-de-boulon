@@ -2,7 +2,9 @@
    - Journal : temps et séries de chaque jour, activités récentes (par élève).
    - Code parent à 4 chiffres (protection contre les clics d'enfant, pas un vrai secret).
    - Bilan par enfant : temps sur 14 jours, points forts, à travailler, conseil, activité récente.
-   - Limite de temps par jour : rappel, ou pause jusqu'au lendemain (déblocage par le code). */
+   - Limite de temps par jour : rappel, ou pause jusqu'au lendemain (déblocage par le code).
+     Par défaut : 30 minutes, puis pause (l'enlever passe par le code : c'est le choix du parent).
+   - Rythme des visites (série, médailles « Régulier » et « Assidu ») : une visite par semaine par défaut. */
 "use strict";
 
 /* ================================================================== */
@@ -68,8 +70,13 @@ const Parents = {
   reglages() {
     if (!Store.data.parents || typeof Store.data.parents !== "object") Store.data.parents = {};
     const p = Store.data.parents;
-    if (typeof p.limite !== "number") p.limite = 0;          // minutes par jour, 0 = pas de limite
-    if (p.mode !== "pause") p.mode = "rappel";               // rappel | pause
+    /* 15/11/2026 : une séance de 30 minutes puis pause, par défaut (avant : pas de limite). Une limite
+       déjà choisie par le parent est gardée. */
+    if (!(p.version >= 2)) { if (!p.limite) { p.limite = 30; p.mode = "pause"; } p.version = 2; }
+    if (typeof p.limite !== "number") p.limite = 30;         // minutes par jour (une séance), 0 = pas de limite
+    if (p.mode !== "rappel") p.mode = "pause";               // rappel | pause
+    if (!["jour", "jours", "semaine"].includes(p.rythme)) p.rythme = "semaine";   // rythme des visites (Aventure)
+    if (!Array.isArray(p.joursSemaine)) p.joursSemaine = [3, 6];                 // « certains jours » : mercredi, samedi
     return p;
   },
   empreinte(code) {
@@ -224,7 +231,8 @@ function conseilsPour(u, b) {
   const out = [];
   const total = Object.keys(LESSONS).length;
   if (!b.lecons.length) return [`${u.name} n'a pas encore fait de leçon. Le test de la boussole (dans l'atelier) est un bon point de départ : il propose des leçons adaptées.`];
-  if (b.joursActifs <= 1) out.push(`Sur les 7 derniers jours, ${u.name} a joué ${b.joursActifs ? "un seul jour" : "aucun jour"}. Quelques minutes chaque jour valent mieux qu'une longue séance par semaine.`);
+  if (!b.joursActifs) out.push(`Sur les 7 derniers jours, ${u.name} n'a pas joué : c'est le moment de reprendre le rendez-vous.`);
+  else if (b.joursActifs <= 1 && Parents.reglages().rythme === "jour") out.push(`Sur les 7 derniers jours, ${u.name} a joué un seul jour. Quelques minutes chaque jour valent mieux qu'une longue séance par semaine.`);
   else if (b.joursActifs >= 4) out.push(`Belle régularité : ${b.joursActifs} jours d'activité sur les 7 derniers.`);
   if (b.faibles.length) out.push(`À revoir ensemble : « ${LESSONS[b.faibles[0].id].title} »${b.faibles[1] ? ` et « ${LESSONS[b.faibles[1].id].title} »` : ""}. Le bouton « Réviser » du cahier les repropose automatiquement.`);
   const rev = Revision.aFaire(u);
