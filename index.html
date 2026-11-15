@@ -20,7 +20,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#23565a">
 <link rel="icon" href="site/img/boulon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="site/style.css?v=20261115-1751">
+<link rel="stylesheet" href="site/style.css?v=20261115-2354">
 </head>
 <body>
 <a class="aller-contenu" href="#contenu">Aller au contenu</a>
@@ -53,10 +53,10 @@
           <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M8 5 L19 12 L8 19 Z" fill="#2b2236"/></svg>
           Jouer en ligne
         </a>
-        <a class="bouton clair" href="#installer">
+        <span class="bouton clair bientot" role="note">
           <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M12 4 V15 M7 10 L12 15 L17 10 M5 19 H19" fill="none" stroke="#2b2236" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Télécharger pour Windows
-        </a>
+          Télécharger pour Windows <small>· bientôt</small>
+        </span>
       </div>
       <p class="accueil-note">Dans Edge ou Chrome, sur un ordinateur. Rien à installer pour jouer en ligne.</p>
     </div>
@@ -114,7 +114,7 @@
       </ul>
       <div class="boutons">
         <a class="bouton petit" href="niveaux/cp/index.html">Jouer au CP</a>
-        <a class="bouton petit clair" href="#installer">Télécharger</a>
+        <span class="bouton petit clair bientot" role="note">Télécharger <small>· bientôt</small></span>
       </div>
     </article>
     <article class="classe ce2">
@@ -130,7 +130,7 @@
       </ul>
       <div class="boutons">
         <a class="bouton petit" href="niveaux/ce2/index.html">Jouer au CE2</a>
-        <a class="bouton petit clair" href="#installer">Télécharger</a>
+        <span class="bouton petit clair bientot" role="note">Télécharger <small>· bientôt</small></span>
       </div>
     </article>
   </div>
@@ -236,12 +236,14 @@
 <section id="installer" class="contenu section installer">
   <h2>Installer sur Windows</h2>
   <div class="boutons">
-    <a class="bouton" href="https://github.com/Dahitial/atelier-de-boulon/releases">
+    <span class="bouton clair bientot" role="note">
       <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M12 4 V15 M7 10 L12 15 L17 10 M5 19 H19" fill="none" stroke="#2b2236" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Télécharger <small>· Setup du CP et du CE2</small>
-    </a>
+      Téléchargement en cours de préparation
+    </span>
   </div>
-  <ol class="etapes">
+  <p class="installer-note">Le programme d'installation pour Windows est en cours de préparation&nbsp;: il sera bientôt disponible ici. En attendant, le CP et le CE2 se jouent en ligne, sans rien installer.</p>
+  <div class="boutons"><a class="bouton petit" href="#jouer">Jouer en ligne</a></div>
+  <ol class="etapes" hidden>
     <li>
       <span class="numero" aria-hidden="true">1</span>
       <strong>Téléchargez le Setup</strong>
@@ -259,7 +261,7 @@
       <span>Le jeu s'ouvre depuis le menu Démarrer ou le bureau, même sans Internet.</span>
     </li>
   </ol>
-  <p class="installer-note">Pourquoi cette alerte&nbsp;? Le programme n'est pas encore signé. La signature gratuite réservée aux logiciels libres est en cours de demande.</p>
+  <p class="installer-note" hidden>Pourquoi cette alerte&nbsp;? Le programme n'est pas encore signé. La signature gratuite réservée aux logiciels libres est en cours de demande.</p>
 </section>
 
 </main>

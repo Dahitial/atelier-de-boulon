@@ -17,6 +17,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { scroll-behavior: smooth; }
 body {
   margin: 0; background: var(--paper); color: var(--ink);
@@ -59,6 +60,7 @@ p, ul, ol { margin: 0; }
 .bouton.clair { background: var(--paper); }
 .bouton.petit { min-height: 48px; padding: 0 22px; font-size: 19px; border-radius: 14px; box-shadow: none; }
 .bouton.petit:hover { box-shadow: none; }
+.bouton.bientot, .bouton.bientot:hover, .bouton.bientot:active { opacity: .6; cursor: default; transform: none; box-shadow: none; }
 .bouton small { font-family: var(--texte); font-weight: 400; font-size: 16px; }
 .boutons { display: flex; flex-wrap: wrap; gap: 16px; }
 
@@ -142,6 +144,8 @@ p, ul, ol { margin: 0; }
 /* Installer */
 .installer { padding-bottom: 72px; }
 .installer .boutons { justify-content: center; }
+.installer .installer-note { margin-top: 20px; }
+.installer-note + .boutons { margin-top: 16px; }
 .etapes { padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 20px; }
 .etapes li { background: #fff; border: 3px solid var(--ink); border-radius: 20px; padding: 22px; display: flex; flex-direction: column; gap: 8px; }
 .etapes .numero {
