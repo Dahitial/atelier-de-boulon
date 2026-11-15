@@ -65,6 +65,24 @@ const RoboMoteur = {
     return { etapes, choc: false, arrive: c === g.but[0] && r === g.but[1], c, r, dir };
   },
 
+  /* la flèche suivante d'un plus court chemin, depuis la case (c, r) (flèches, sans orientation) :
+     le coup de pouce du CP ; null si Rivet est déjà sur l'écrou ou ne peut pas l'atteindre */
+  prochaineFleche(g, c, r) {
+    if (c === g.but[0] && r === g.but[1]) return null;
+    const vus = new Set([c + "," + r]), file = [{ c, r, premiere: null }];
+    while (file.length) {
+      const s = file.shift();
+      for (const [f, sens] of Object.entries(this.FLECHES)) {
+        const [dc, dr] = this.DIRS[sens], n = { c: s.c + dc, r: s.r + dr };
+        if (this.bloque(g, s.c, s.r, n.c, n.r) || vus.has(n.c + "," + n.r)) continue;
+        const premiere = s.premiere || f;
+        if (n.c === g.but[0] && n.r === g.but[1]) return premiere;
+        vus.add(n.c + "," + n.r); file.push({ ...n, premiere });
+      }
+    }
+    return null;
+  },
+
   /* le plus petit nombre de cartes simples (sans boucle) pour atteindre l'écrou */
   plusCourt(g, relatif) {
     const cle = (c, r, d) => `${c},${r},${relatif ? d : ""}`;

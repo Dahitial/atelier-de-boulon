@@ -23,6 +23,7 @@ const ROBO_MISSIONS = {
     { id: "programme", nom: "Le programme", icone: "▶", mode: "programme",
       consigne: "Prépare toutes les flèches, puis appuie sur « Go ! ».",
       grilles: [
+        { n: 4, depart: [0, 3], but: [3, 3], cailloux: [] },   // tout droit d'abord (test avec un enfant)
         { n: 4, depart: [0, 3], but: [2, 1], cailloux: [[1, 3]] },
         { n: 5, depart: [0, 4], but: [4, 0], cailloux: [[2, 4], [2, 3], [1, 1], [3, 1]] },
         { n: 5, depart: [4, 4], but: [0, 0], cailloux: [[3, 4], [3, 3], [1, 2], [2, 2], [1, 0]] },

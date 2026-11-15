@@ -173,7 +173,34 @@ App.register("robo-grille", (root, params) => {
   } else {
     /* le programme (ou le bug) : on prépare les cartes, puis « Go ! » */
     const bug = m.mode === "bug";
-    const N = m.repete ? g.sol.length : bug ? g.sol.length : Math.min(14, plusCourt + 2);
+    /* CP, « Le programme » et « Répéter » : le chemin se dessine à chaque carte posée (rouge s'il bute sur
+       un caillou). « Le programme » a aussi 4 cases de plus que le plus court chemin, et un coup de pouce
+       après deux essais ratés (test avec un enfant : compter tout le trajet de tête le bloquait).
+       « Répéter » garde ses cases comptées : elles obligent à utiliser la carte « fois ». */
+    const apercu = cp && !relatif && m.mode === "programme", pouce = apercu && !m.repete;
+    const N = m.repete ? g.sol.length : bug ? g.sol.length : Math.min(14, plusCourt + (apercu ? 4 : 2));
+    const boutons = {};
+    const dessinerChemin = () => {
+      plateau.querySelectorAll(".robo-pas").forEach((x) => x.remove());
+      if (!apercu) return;
+      const res = RoboMoteur.executer(g, prog, false, !!m.repeteApres);
+      const marque = (c, r, cls) => { if (c < 0 || r < 0 || c >= g.n || r >= g.n) return;
+        plateau.appendChild(h("div", { class: "robo-pas " + cls, style: { left: 10 + c * (cote + 4) + "px", top: 10 + r * (cote + 4) + "px", width: cote + "px", height: cote + "px" } }, h("i"))); };
+      res.etapes.forEach((s, i) => marque(s.c, s.r, res.choc ? "rouge" : i === res.etapes.length - 1 ? "fin" : ""));
+      if (res.choc) {
+        const [dc, dr] = RoboMoteur.DIRS[RoboMoteur.FLECHES[prog[res.i]]];
+        marque(res.c + dc, res.r + dr, "choc");
+        const s = fente.children[res.i]; if (s) s.classList.add("faux");
+      }
+    };
+    const coupDePouce = () => {
+      Object.values(boutons).forEach((b) => b.classList.remove("indice"));
+      if (!pouce || fini || echecs < 2) return;
+      const res = RoboMoteur.executer(g, prog, false, false);
+      if (res.choc) return;
+      const f = RoboMoteur.prochaineFleche(g, res.c, res.r);
+      if (f && boutons[f]) boutons[f].classList.add("indice");
+    };
     const depart = bug ? g.sol.map((x, i) => (i === g.bug.i ? g.bug.faux : x)) : [];
     const prog = depart.slice();
     const fente = h("div", { class: "robo-fente" });
@@ -198,6 +225,7 @@ App.register("robo-grille", (root, params) => {
         });
         fente.appendChild(s);
       }
+      dessinerChemin(); coupDePouce();
     };
     panneau.appendChild(h("h3", { class: "robo-sous" }, bug ? "Le programme (clique sur une carte pour la changer)" : `Mon programme (${N} cases)`));
     panneau.appendChild(fente);
@@ -206,6 +234,7 @@ App.register("robo-grille", (root, params) => {
       const ajouter = (cmd) => {
         const b = h("button", { class: "robo-cmd" + (cmd[0] === "r" ? " rep" : relatif ? " mot" : ""), type: "button", "aria-label": roboCarte(cmd, relatif).nom },
           cmd[0] === "r" ? `🔁 ${cmd[1]}×` : relatif ? `${roboCarte(cmd, relatif).t} ${cmd === "av" ? "avance" : cmd === "g" ? "à gauche" : "à droite"}` : ROBO_CMD[cmd].t);
+        boutons[cmd] = b;
         b.addEventListener("mouseenter", () => { if (cp) Voice.survol(roboCarte(cmd, relatif).nom); });
         b.addEventListener("click", () => {
           if (fini || enCours) return;
@@ -238,11 +267,13 @@ App.register("robo-grille", (root, params) => {
         echecs++; Sound.bad(); slots[res.i] && slots[res.i].classList.add("faux");
         rivet.classList.remove("bip"); void rivet.offsetWidth; rivet.classList.add("bip");
         Voice.speak(relatif ? "Bip ! Un obstacle. Regarde dans quelle direction je suis tourné." : "Bip ! Il y a un obstacle. Change la flèche en rouge.");
+        coupDePouce();
       } else if (res.arrive) {
         reussi(echecs === 0 ? 3 : echecs === 1 ? 2 : 1);
       } else {
         echecs++; Sound.bad();
-        Voice.speak(cp ? "Presque ! Rivet s'est arrêté avant l'écrou." : "Rivet s'est arrêté, mais pas sur l'écrou.");
+        Voice.speak(cp ? "Presque ! Rivet s'est arrêté avant l'écrou." + (pouce && echecs >= 2 ? " Regarde la flèche qui clignote : c'est la bonne." : "") : "Rivet s'est arrêté, mais pas sur l'écrou.");
+        coupDePouce();
       }
       enCours = false;
     });

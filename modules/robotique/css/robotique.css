@@ -33,6 +33,16 @@
 .robo-case.mur-b { box-shadow: inset 0 -7px 0 var(--ink); }
 .robo-case.mur-d.mur-b { box-shadow: inset -7px 0 0 var(--ink), inset 0 -7px 0 var(--ink); }
 .robo-rivet { position: absolute; z-index: 2; pointer-events: none; transition: left .32s ease, top .32s ease, transform .32s ease; }
+/* CP : le chemin prévu, flèche après flèche */
+.robo-pas { position: absolute; z-index: 1; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.robo-pas i { display: block; width: 34%; height: 34%; border-radius: 50%; background: #3fa34d; border: 3px solid var(--ink); box-shadow: 0 0 0 4px rgba(63, 163, 77, .25); animation: pop .25s; }
+.robo-pas.fin i { width: 46%; height: 46%; background: var(--violet); }
+.robo-pas.rouge i { background: #d64545; }
+.robo-pas.choc i { width: 58%; height: 58%; border-radius: 12px; background: #d64545; }
+.robo-pas.choc::after { content: "✖"; position: absolute; color: #fff; font: 900 30px sans-serif; }
+/* le coup de pouce : la bonne flèche suivante clignote */
+.robo-cmd.indice { animation: robo-indice .9s ease-in-out infinite; box-shadow: 0 0 0 5px #ffe27a, 0 0 22px 8px rgba(255, 226, 122, .9); }
+@keyframes robo-indice { 50% { transform: scale(1.12); } }
 .robo-rivet svg { display: block; }
 .robo-rivet.bip { animation: robo-bip .45s; }
 @keyframes robo-bip { 0%, 100% { translate: 0; } 25% { translate: -6px 0; } 75% { translate: 6px 0; } }
