@@ -153,7 +153,7 @@ App.register("exterieur", (root) => {
   const fin = () => { root.removeEventListener("pointerdown", premier); window.removeEventListener("keydown", premier); };
   const premier = (e) => {
     if (e.target && e.target.closest && e.target.closest('[data-id="entrer"], button, .modal, .mascot')) return;   // la porte, « Entrer », les réglages, Boulon (qui parle déjà quand on le clique)
-    fin(); m.say(bonjour, { dy: -20 });
+    fin(); App.bonjourEntendu = true; m.say(bonjour, { dy: -20 });
   };
   App.onLeave(fin);
   setTimeout(() => {
@@ -161,13 +161,14 @@ App.register("exterieur", (root) => {
     m.say(bonjour, { dy: -20 });
     setTimeout(() => {
       parti = ("speechSynthesis" in window && speechSynthesis.speaking) || !!Voice.audio;
-      if (parti || App.current !== "exterieur" || !m.bubble) return;
+      if (parti) App.bonjourEntendu = true;
+    if (parti || App.current !== "exterieur" || !m.bubble) return;
       const hp = m.bubble.querySelector(".reecouter");
       if (hp) hp.classList.add("invite");
       root.addEventListener("pointerdown", premier);
       window.addEventListener("keydown", premier);
     }, 900);
-  }, 600);
+  }, 150);
 });
 
 /* ---------------- Identification ---------------- */
@@ -244,7 +245,11 @@ App.register("identif", (root) => {
   root.appendChild(h("button", { class: "btn white abs", style: { left: "100px", bottom: "40px", fontSize: "18px", padding: "8px 14px" }, title: "Bilan des enfants, temps de jeu, code parent",
     onclick: ouvrirEspaceParents }, "👪 Espace parents"));
   const m = App.mascot(root, { x: 850, y: 590 });
-  setTimeout(() => m.say(Store.data.users.length ? "Clique sur ton personnage, ou crée un nouvel élève." : "Crée ton personnage pour commencer !"), 300);
+  /* au CP, si le navigateur a empêché le bonjour de l'accueil (l'enfant a cliqué sur « Entrer » tout de suite),
+     Boulon le dit ici, au premier écran après ce clic */
+  const bonjour = NIVEAU.toutEnVoix && !App.bonjourEntendu ? "Bonjour ! Je suis Boulon, le petit robot inventeur. " : "";
+  App.bonjourEntendu = true;
+  setTimeout(() => m.say(bonjour + (Store.data.users.length ? "Clique sur ton personnage, ou crée un nouvel élève." : "Crée ton personnage pour commencer !")), 300);
 });
 
 /* ---------------- L'atelier (hub) ---------------- */
@@ -338,7 +343,7 @@ App.register("atelier", (root, params) => {
       tip.show(App.helpMode ? `${g.dataset.label}<small>${g.dataset.desc}</small>` : g.dataset.label, x, y);
     };
     /* au survol, Boulon ne parle que lampe allumée (il explique l'objet) : dire le nom à chaque passage de la souris gênait */
-    g.addEventListener("mouseenter", () => { Sound.hover(); showTip(); if (App.helpMode) m.say(g.dataset.desc); });
+    g.addEventListener("mouseenter", () => { Sound.hover(); showTip(); if (App.helpMode) m.say(g.dataset.desc, { survol: true }); });
     g.addEventListener("focus", showTip);
     g.addEventListener("mouseleave", () => tip.hide());
     g.addEventListener("blur", () => tip.hide());
@@ -364,7 +369,7 @@ App.register("atelier", (root, params) => {
       const b = h("button", { class: "etiquette-objet", style: { left: e.x + "px", top: e.y + "px", minWidth: (e.w || 150) + "px", "--teinte": e.couleur || "#2b2236" } });
       b.innerHTML = ICONE_HAUT_PARLEUR;
       b.append(e.texte);
-      b.addEventListener("mouseenter", () => { Sound.hover(); if (App.helpMode) m.say(g.dataset.desc); });
+      b.addEventListener("mouseenter", () => { Sound.hover(); if (App.helpMode) m.say(g.dataset.desc, { survol: true }); });
       b.addEventListener("click", act);
       root.appendChild(b);
     }

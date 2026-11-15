@@ -168,7 +168,7 @@ App.register("inventions", (root, params) => {
     const b = h("button", { class: "inv-onglet" + (id === theme ? " sel" : ""), type: "button", style: { "--c": INVENTIONS[id].couleur },
       onclick: () => { if (id !== theme) { Sound.click(); App.go("inventions", { theme: id }); } } },
       INVENTIONS[id].court, et ? h("span", { class: "inv-et", html: "★".repeat(et) }) : null);
-    if (cp) b.addEventListener("mouseenter", () => Voice.speak(INVENTIONS[id].nom));
+    if (cp) b.addEventListener("mouseenter", () => Voice.survol(INVENTIONS[id].nom));
     onglets.appendChild(b);
   });
   tete.appendChild(onglets);
@@ -181,7 +181,7 @@ App.register("inventions", (root, params) => {
     const b = h("button", { class: "inv-etape" + (etat.vues[e.id] ? " vue" : ""), type: "button", "aria-label": e.nom },
       h("span", { class: "inv-rond", html: picto(e.id, cp ? 92 : 62) }), h("b", null, e.nom), h("small", null, e.quand));
     b.addEventListener("click", () => montrer(i, true));
-    if (cp) b.addEventListener("mouseenter", () => Voice.speak(e.nom));
+    if (cp) b.addEventListener("mouseenter", () => Voice.survol(e.nom));
     ligne.appendChild(b);
     return b;
   });
@@ -223,14 +223,14 @@ App.register("inventions", (root, params) => {
   placer(50);
   boite.append(h("div", { class: "inv-avant-tete" }, h("span", null, "Avant"), h("span", null, "Maintenant")), vue,
     h("label", { class: "inv-glisse", for: "inv-curseur" }, "Fais glisser le rideau", curseur), h("p", { class: "inv-legende" }, T.legende));
-  if (cp) boite.addEventListener("mouseenter", () => Voice.speak("Avant, maintenant. Fais glisser le rideau."), { once: true });
+  if (cp) boite.addEventListener("mouseenter", () => Voice.survol("Avant, maintenant. Fais glisser le rideau."), { once: true });
   root.appendChild(boite);
 
   /* les activités du thème */
   const acts = h("div", { class: "abs inv-acts" });
   const act = (cls, titre, sous, go, voix) => {
     const b = h("button", { class: "inv-act " + cls, type: "button", onclick: () => { Sound.click(); go(); } }, h("b", null, titre), h("small", null, sous));
-    if (cp) b.addEventListener("mouseenter", () => Voice.speak(voix || titre));
+    if (cp) b.addEventListener("mouseenter", () => Voice.survol(voix || titre));
     acts.appendChild(b);
   };
   if (theme === "transports") act("vert", "La course Tanger → Marrakech", cp ? "Qui arrive le premier ?" : "À pied : 20 jours. En avion : 1 heure.", () => App.go("inv-course"), "La course de Tanger à Marrakech");
@@ -270,7 +270,7 @@ App.register("inv-defi", (root, params) => {
   const tas = h("div", { class: "abs inv-tas" });
   shuffle(choisies.map((e, i) => ({ e, i }))).forEach(({ e, i }) => {
     const b = h("button", { class: "inv-carte", type: "button", "aria-label": e.nom }, h("span", { html: picto(e.id, cp ? 120 : 96) }), h("b", null, e.nom));
-    if (cp) b.addEventListener("mouseenter", () => { if (!fini) Voice.speak(e.nom); });
+    if (cp) b.addEventListener("mouseenter", () => { if (!fini) Voice.survol(e.nom); });
     b.addEventListener("click", () => {
       if (fini || b.disabled) return;
       if (i === suivante) {
@@ -334,7 +334,7 @@ App.register("inv-course", (root) => {
     const vehicule = h("span", { class: "inv-vehicule", html: picto(v.id, 58) });
     const temps = h("small", { class: "inv-arrivee" });
     const l = h("div", { class: "inv-couloir" }, h("b", null, v.nom), h("div", { class: "inv-route" }, vehicule), temps);
-    if (cp) l.addEventListener("mouseenter", () => Voice.speak(v.nom));
+    if (cp) l.addEventListener("mouseenter", () => Voice.survol(v.nom));
     piste.appendChild(l);
     return { v, vehicule, temps, arrive: false };
   });
@@ -406,7 +406,7 @@ App.register("sablier", (root) => {
   const carteChoix = (cls, dessin, titre, sous, go, voix) => {
     const b = h("button", { class: "panel inv-choix " + cls, type: "button", onclick: () => { Sound.click(); go(); } },
       h("span", { class: "inv-choix-img", html: dessin }), h("b", null, titre), h("small", null, sous));
-    b.addEventListener("mouseenter", () => { Sound.hover(); if (cp) Voice.speak(voix); });
+    b.addEventListener("mouseenter", () => { Sound.hover(); if (cp) Voice.survol(voix); });
     return b;
   };
   const frise = cp ? ["matin", "printemps"].map((n) => picto(n, 120)).join("") : Art.sablier().replace("<svg", '<svg width="150" height="150"');

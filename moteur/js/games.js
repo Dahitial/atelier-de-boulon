@@ -43,7 +43,7 @@ App.register("jeux", (root) => {
     c.addEventListener("click", ouvrir);
     c.addEventListener("keydown", (e) => { if (e.key === "Enter") ouvrir(); });
     /* tout en voix (CP) : le jeu se présente au survol */
-    if (NIVEAU.toutEnVoix) c.addEventListener("mouseenter", () => Voice.speak(`${j.titre}. ${j.desc}` + (locked ? ` ${j.condition()} pour l'ouvrir.` : "")));
+    if (NIVEAU.toutEnVoix) c.addEventListener("mouseenter", () => Voice.survol(`${j.titre}. ${j.desc}` + (locked ? ` ${j.condition()} pour l'ouvrir.` : "")));
     cards.appendChild(c);
   });
   root.appendChild(cards);

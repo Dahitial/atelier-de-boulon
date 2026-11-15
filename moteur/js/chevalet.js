@@ -276,7 +276,7 @@ App.register("peinture", (root, params) => {
   const btnOutil = (id, def) => {
     const b = h("button", { class: "chev-outil", type: "button", title: def.nom, "aria-label": def.nom, html: `<svg width="28" height="28" viewBox="0 0 26 26" aria-hidden="true">${def.icone}</svg>` });
     b.addEventListener("click", () => { choisir(id); Sound.click(); if (cp) Voice.speak(def.nom); });
-    if (cp) b.addEventListener("mouseenter", () => Voice.speak(def.nom));
+    if (cp) b.addEventListener("mouseenter", () => Voice.survol(def.nom));
     b.dataset.id = id;
     return b;
   };
@@ -330,7 +330,7 @@ App.register("peinture", (root, params) => {
         s.sel = s.objets.length - 1; choisir("selection"); s.sel = s.objets.length - 1;
         Sound.pop(); memoriser(); dessiner();
       });
-      if (cp) b.addEventListener("mouseenter", () => Voice.speak(im.nom));
+      if (cp) b.addEventListener("mouseenter", () => Voice.survol(im.nom));
       grilleImages.appendChild(b);
     });
   }
@@ -408,7 +408,7 @@ App.register("peinture", (root, params) => {
         choisir("pot"); memoriser(); dessiner();
         Voice.speak("Choisis une couleur, puis clique dans une zone pour la colorier.");
       });
-      if (cp) b.addEventListener("mouseenter", () => Voice.speak(motDe(n)));
+      if (cp) b.addEventListener("mouseenter", () => Voice.survol(motDe(n)));
       grille.appendChild(b);
     });
     fermer = App.modal(h("div", { class: "col" }, h("h2", { class: "title dark", style: { fontSize: "30px", margin: 0 } }, "Choisis un coloriage"), grille,

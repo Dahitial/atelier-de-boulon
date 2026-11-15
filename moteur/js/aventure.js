@@ -36,6 +36,34 @@ const AVENTURE_BOUTIQUE = [
   { id: "rose", type: "couleur", nom: "Boulon rose", prix: 40 },
 ];
 
+/* La fiche d'un objet de la boutique : ce que l'enfant y gagne, avec des aperçus, avant de l'acheter
+   (au CP, Boulon la lit). lignes : [icône, texte], {ici} = la pièce où va l'objet ; apercus : [photo,
+   légende], photos des activités dans niveaux/<niveau>/apercus/ (faites par outils-site/apercus_boutique.mjs).
+   Un habit ou une couleur montre aussi Boulon qui le porte. */
+const AVENTURE_FICHES = {
+  guirlande: { lignes: [["🎊", "Elle va {ici}, et on la voit aussi sur la maison."], ["🎉", "Clique dessus : c'est la fête ! Boulon te présente une fête du Maroc."]], apercus: [["fete", "Une fête du Maroc"]] },
+  cactus: { lignes: [["🌵", "Il va {ici}. On le voit aussi à la fenêtre de la maison."], ["❓", "Clique dessus : « Le savais-tu ? » sur le désert, avec une question."]], apercus: [["cactus", "Le savais-tu ?"]] },
+  plante: { lignes: [["🪴", "Elle va {ici}. On la voit aussi à la fenêtre de la maison."], ["🌿", "Clique dessus : la plante t'explique comment elle vit, avec une question."]], apercus: [["plante", "Le savais-tu ?"]] },
+  pot: { lignes: [["🌱", "Il ouvre ton petit jardin : tu achètes des graines, tu les plantes et tu les arroses."], ["💧", "Ta plante pousse un peu à chaque visite, si elle a de l'eau."], ["🪟", "Il va {ici}, sur le rebord de la grande fenêtre."]], apercus: [["jardin", "Ton petit jardin"]] },
+  affiche: { lignes: [["🚀", "Elle va {ici}."], ["❓", "Clique dessus : « Le savais-tu ? » sur l'espace et les fusées, avec une question."]], apercus: [["affiche", "Le savais-tu ?"]] },
+  tableau: { lignes: [["🧑‍🏫", "Il va {ici}."], ["❓", "Clique dessus : le défi du jour. Une question par jour, un seul essai."], ["🔩", "Défi réussi : 3 écrous de plus !"]], apercus: [["defi-du-jour", "Le défi du jour"]] },
+  tapis: { lignes: [["🌈", "Il va {ici}."], ["🎨", "Clique dessus : l'atelier des couleurs. Tu mélanges deux peintures pour en inventer une nouvelle."], ["🖌️", "Tes mélanges vont dans le chevalet, pour dessiner avec."]], apercus: [["couleurs", "L'atelier des couleurs"]] },
+  chat: { lignes: [["🐱", "Rivet vient vivre {ici}. On le voit aussi à la fenêtre de la maison."], ["🤖", "Clique sur lui : il ouvre son atelier. Tu apprends à donner des ordres à un robot pour l'aider à trouver l'écrou."], ["⚙️", "Il ouvre aussi un nouveau jeu : la machine de Boulon, avec des tuyaux et des engrenages."]], apercus: [["rivet", "L'atelier de Rivet"], ["machine", "La machine de Boulon"]] },
+  noeud: { lignes: [["🎀", "Boulon le porte autour du cou, partout dans le jeu."]] },
+  echarpe: { lignes: [["🧣", "Boulon la porte autour du cou, partout dans le jeu."]] },
+  lunettes: { lignes: [["👓", "Boulon les porte sur les yeux, partout dans le jeu."], ["🌱", "Avec elles, tu vois les racines de ta plante, dans le jardin."]] },
+  soleil: { lignes: [["🕶️", "Boulon les porte sur les yeux, partout dans le jeu."]] },
+  casquette: { lignes: [["🧢", "Boulon la porte sur la tête, partout dans le jeu."]] },
+  chantier: { lignes: [["⛑️", "Boulon le porte sur la tête, partout dans le jeu."], ["🧱", "Pour la tour, dans les jeux de construction : 5 blocs de plus !"]] },
+  magicien: { lignes: [["🎩", "Boulon le porte sur la tête, partout dans le jeu."], ["🦊", "Au défi contre Zigzag, il te donne un joker : il enlève une mauvaise réponse, une fois par défi."]] },
+  couronne: { lignes: [["👑", "Boulon la porte sur la tête, partout dans le jeu. C'est le plus bel objet de la boutique !"]] },
+  orange: { lignes: [["🟠", "Boulon reprend sa couleur orange, partout dans le jeu."]] },
+  bleu: { lignes: [["🔵", "Boulon devient bleu, partout dans le jeu."]] },
+  vert: { lignes: [["🟢", "Boulon devient vert, partout dans le jeu."]] },
+  violet: { lignes: [["🟣", "Boulon devient violet, partout dans le jeu."]] },
+  rose: { lignes: [["🌸", "Boulon devient rose, partout dans le jeu."]] },
+};
+
 /* médailles : chacune rapporte 10 écrous */
 const nbLecons = (u) => Object.keys(u.lessons || {}).filter((id) => LESSONS[id]).length;
 const nbParfaites = (u) => Object.entries(u.lessons || {}).filter(([id, r]) => LESSONS[id] && r.best >= 16).length;
@@ -262,11 +290,52 @@ const Aventure = {
     this.utiliser(u, item, true);
     /* atelier en plusieurs pièces : on dit où l'objet est rangé */
     const piece = item.type === "decor" && Pieces.de(item.id, "decors");
-    this._file.push({ txt: `🛍️ ${item.nom} : c'est à toi !` + (piece ? ` Va le voir ${piece.dans}.` : "") });
+    this._file.push({ txt: `🛍️ ${item.nom} : c'est à toi !` + (piece ? ` Va voir ${piece.dans}.` : "") });
     this.conclure(u);
     return true;
   },
   possede(u, item) { return item.id === "orange" || !!this.etat(u).achats[item.id]; },
+  /* la fiche de l'objet : ce que l'enfant y gagne, des aperçus, les écrous qui manquent ; apres() : après l'achat */
+  fiche(u, it, apres) {
+    const a = this.etat(u), F = AVENTURE_FICHES[it.id] || { lignes: [] };
+    const piece = it.type === "decor" && typeof Pieces !== "undefined" && Pieces.de(it.id, "decors");
+    const lignes = F.lignes.map(([ic, t]) => [ic, t.replace("{ici}", piece ? piece.dans : "dans l'atelier")]);
+    const habit = ["tete", "yeux", "cou"].includes(it.type), couleur = it.type === "couleur";
+    if (habit) lignes.push(["🔄", "Tu peux l'enlever ou la remettre quand tu veux, dans le coffre."]);
+    if (couleur) lignes.push(["🔄", "Tu peux changer de couleur quand tu veux, dans le coffre."]);
+    const possede = this.possede(u, it), manque = Math.max(0, it.prix - a.ecrous);
+    const refus = `Tu ne peux pas encore l'acheter : il te manque ${manque} écrou${manque > 1 ? "s" : ""}.`;
+    /* les aperçus : les activités débloquées, ou Boulon qui porte l'objet */
+    const apercus = (F.apercus || []).map(([f, leg]) => h("figure", null, h("img", { src: CHEMINS.niveau + "apercus/" + f + ".jpg", alt: leg }), leg));
+    if (habit || couleur) apercus.push(h("figure", null, h("div", { class: "av-fiche-boulon", html: Art.boulon({ ...(a.porte || {}), [couleur ? "couleur" : it.type]: it.id }) }), "Sur Boulon"));
+    const etat = possede ? h("div", { class: "av-fiche-etat ok" }, h("b", null, "C'est déjà à toi !"))
+      : manque ? h("div", { class: "av-fiche-etat" }, h("b", null, `Tu as ${a.ecrous} écrou${a.ecrous > 1 ? "s" : ""} : il t'en manque ${manque}.`),
+          h("div", null, "Fais des leçons et des révisions pour en gagner !"), h("div", { class: "av-fiche-barre" }, h("i", { style: { width: Math.round((a.ecrous / it.prix) * 100) + "%" } })))
+      : h("div", { class: "av-fiche-etat ok" }, h("b", null, "Tu as assez d'écrous !"), h("div", null, `Après l'achat, il t'en restera ${a.ecrous - it.prix}.`));
+    const texte = `${it.nom}. ${lignes.map((l) => l[1]).join(" ")} `
+      + (possede ? "C'est déjà à toi !" : manque ? refus + " Fais des leçons et des révisions pour en gagner !" : "Tu as assez d'écrous pour l'acheter.");
+    let close;
+    const acheter = h("button", { class: "btn " + (manque ? "white av-fiche-pasassez" : "green"), onclick: () => {
+      /* pas assez d'écrous : le bouton reste cliquable, pour que Boulon explique pourquoi */
+      if (manque) { Sound.bad(); acheter.classList.remove("secoue"); void acheter.offsetWidth; acheter.classList.add("secoue"); Voice.speak(refus); return; }
+      if (!this.acheter(u, it)) return;
+      Sound.good(); close();
+      if (NIVEAU.toutEnVoix) Voice.speak(`${it.nom} : c'est à toi !` + (piece ? ` Va voir ${piece.dans}.` : ""));
+      apres && apres();
+    } }, `🛒 Acheter : 🔩 ${it.prix}`);
+    close = App.modal(h("div", { class: "av-fiche" },
+      h("div", { class: "av-fiche-gauche" },
+        h("div", { class: "av-fiche-vignette", html: this.vignette(it) }),
+        h("div", { style: { textAlign: "center" } }, h("span", { class: "av-fiche-prix" }, it.prix ? `🔩 ${it.prix}` : "gratuit")),
+        apercus.length ? h("div", { class: "av-fiche-apercus" }, h("h4", null, "Aperçu :"), ...apercus) : null),
+      h("div", null, h("h2", { class: "title dark" }, it.nom), h("h4", null, "Ce que tu y gagnes :"),
+        h("ul", { class: "av-fiche-liste" }, ...lignes.map(([ic, t]) => h("li", null, h("span", null, ic), h("div", null, t)))), etat),
+      h("div", { class: "av-fiche-boutons" },
+        h("button", { class: "btn sky", onclick: () => Voice.speak(texte) }, "🔊 Réécouter"),
+        possede ? null : acheter,
+        h("button", { class: "btn white", onclick: () => close() }, "Fermer"))), { onClose: () => Voice.stop() });
+    if (NIVEAU.toutEnVoix) Voice.speak(texte); else if (!possede && manque) Voice.speak(refus);
+  },
   utilise(u, item) {
     const a = this.etat(u);
     if (item.type === "decor") return !!a.places[item.id];
@@ -398,7 +467,7 @@ App.register("aventure", (root, params) => {
       const carte = h("div", { class: "av-carte medaille" + (date ? " gagnee" : "") },
         h("div", { class: "av-med-ic" }, date ? icone(m.icone) : "🔒"), h("b", null, m.nom), h("small", null, m.desc),
         date ? h("em", null, "Gagnée " + Revision.dateFr(date).replace(/^le /, "le ")) : null);
-      if (NIVEAU.toutEnVoix) carte.addEventListener("mouseenter", () => Voice.speak(`${m.nom}. ${m.desc}` + (date ? " Tu l'as gagnée !" : "")));
+      if (NIVEAU.toutEnVoix) carte.addEventListener("mouseenter", () => Voice.survol(`${m.nom}. ${m.desc}` + (date ? " Tu l'as gagnée !" : "")));
       grille.appendChild(carte);
     });
     contenu.appendChild(grille);
@@ -410,20 +479,20 @@ App.register("aventure", (root, params) => {
     [orange, ...AVENTURE_BOUTIQUE].forEach((it) => {
       const k = it.type === "decor" ? "decor" : it.type === "couleur" ? "couleur" : "habits";
       const possede = Aventure.possede(u, it), utilise = Aventure.utilise(u, it);
-      const carte = h("div", { class: "av-carte" + (possede ? " possede" : "") + (utilise ? " utilise" : "") },
+      const carte = h("div", { class: "av-carte" + (possede ? " possede" : "") + (utilise ? " utilise" : ""), title: "Voir ce que fait cet objet" },
         h("div", { class: "av-vignette", html: Aventure.vignette(it) }), h("b", null, it.nom),
         it.type === "decor" && typeof DECORS_ACTIFS !== "undefined" && DECORS_ACTIFS[it.id] ? h("small", { class: "av-effet" }, DECORS_ACTIFS[it.id].effet) : null);
       /* tout en voix (CP) : le nom, le prix ou ce que fait l'objet, au survol */
       if (NIVEAU.toutEnVoix) carte.addEventListener("mouseenter", () => {
         const act = it.type === "decor" && typeof DECORS_ACTIFS !== "undefined" && DECORS_ACTIFS[it.id];
         const piece = it.type === "decor" && Pieces.de(it.id, "decors");
-        Voice.speak(it.nom + (possede ? "." : `, ${it.prix} écrous.`) + (act ? " " + act.effet : "") + (piece ? ` Il va ${piece.dans}.` : ""));
+        Voice.survol(it.nom + (possede ? "." : `, ${it.prix} écrous.`) + (act ? " " + act.effet : "") + (piece ? ` Il va ${piece.dans}.` : ""));
       });
       let btn;
       if (!possede) {
         const manque = it.prix - a.ecrous;
-        btn = h("button", { class: "btn small " + (manque > 0 ? "white" : "green"), disabled: manque > 0, title: manque > 0 ? `Il te manque ${manque} écrous` : "Acheter",
-          onclick: () => { if (Aventure.acheter(u, it)) { Sound.good(); recharger(); } } }, `🔩 ${it.prix}`);
+        btn = h("button", { class: "btn small " + (manque > 0 ? "white" : "green"), title: manque > 0 ? `Il te manque ${manque} écrous` : "Acheter",
+          onclick: (e) => { e.stopPropagation(); Sound.click(); Aventure.fiche(u, it, recharger); } }, `🔩 ${it.prix}`);
         if (manque > 0) carte.appendChild(h("small", { class: "av-manque" }, `il manque ${manque}`));
       } else if (it.type === "decor") {
         btn = h("button", { class: "btn small " + (utilise ? "sky" : "white"), onclick: () => { Sound.click(); Aventure.utiliser(u, it, !utilise); recharger(); } },
@@ -436,6 +505,8 @@ App.register("aventure", (root, params) => {
           utilise ? "✓ Porté" : "Porter");
       }
       carte.appendChild(btn);
+      /* un clic sur l'objet (pas sur son bouton) ouvre sa fiche */
+      carte.addEventListener("click", (e) => { if (e.target.closest("button")) return; Sound.click(); Aventure.fiche(u, it, recharger); });
       grilles[k].appendChild(carte);
     });
   }
@@ -443,7 +514,7 @@ App.register("aventure", (root, params) => {
   if (params.scroll) contenu.scrollTop = params.scroll;
   /* tout en voix (CP) : les onglets, le rang et les écrous se disent au survol */
   if (NIVEAU.toutEnVoix) {
-    const dire = (el, txt) => el && el.addEventListener("mouseenter", () => Voice.speak(txt));
+    const dire = (el, txt) => el && el.addEventListener("mouseenter", () => Voice.survol(txt));
     const [tBoutique, tMedailles] = droite.querySelectorAll(".av-tabs .tab");
     dire(tBoutique, "La boutique : achète des objets avec tes écrous.");
     dire(tMedailles, `Tes médailles : tu en as ${nbMed} sur ${AVENTURE_MEDAILLES.length}.`);

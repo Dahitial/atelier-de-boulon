@@ -74,7 +74,7 @@ App.register("robotique", (root) => {
       h("span", { class: "robo-mission-ic" }, m.icone), h("b", null, m.nom),
       h("span", { class: "robo-et", html: [0, 1, 2].map((k) => `<span class="${k < et ? "on" : ""}">★</span>`).join("") }),
       ouverte ? null : h("span", { class: "robo-cadenas" }, "🔒"));
-    b.addEventListener("mouseenter", () => { Sound.hover(); if (cp) Voice.speak(m.nom); });
+    b.addEventListener("mouseenter", () => { Sound.hover(); if (cp) Voice.survol(m.nom); });
     b.addEventListener("click", () => {
       if (!ouverte) { Sound.bad(); Voice.speak("Celle-ci s'ouvre quand tu as réussi la mission d'avant."); return; }
       Sound.click();
@@ -156,7 +156,7 @@ App.register("robo-grille", (root, params) => {
     const pave = h("div", { class: "robo-pave" });
     [["h", "haut"], ["g", "gauche"], ["d", "droite"], ["b", "bas"]].forEach(([cmd, cl]) => {
       const b = h("button", { class: "robo-cmd fleche " + cl, type: "button", "aria-label": ROBO_CMD[cmd].nom }, ROBO_CMD[cmd].t);
-      b.addEventListener("mouseenter", () => { if (cp) Voice.speak(ROBO_CMD[cmd].nom); });
+      b.addEventListener("mouseenter", () => { if (cp) Voice.survol(ROBO_CMD[cmd].nom); });
       b.addEventListener("click", () => {
         if (fini) return;
         const [dc, dr] = RoboMoteur.DIRS[RoboMoteur.FLECHES[cmd]];
@@ -185,7 +185,7 @@ App.register("robo-grille", (root, params) => {
         const p = prog[i], carte = p ? roboCarte(p, relatif) : null;
         const s = h("button", { class: "robo-slot" + (p ? " plein" : "") + (p && p[0] === "r" ? " boucle" : ""), type: "button", "aria-label": carte ? carte.nom : "case vide" },
           carte ? h("span", null, p[0] === "r" ? `${p[1]}×` : carte.t) : null, carte && (relatif || p[0] === "r") ? h("small", null, carte.nom) : null);
-        s.addEventListener("mouseenter", () => { if (cp && carte) Voice.speak(carte.nom); });
+        s.addEventListener("mouseenter", () => { if (cp && carte) Voice.survol(carte.nom); });
         s.addEventListener("click", () => {
           if (fini || enCours || !p) return;
           Sound.pop();
@@ -206,7 +206,7 @@ App.register("robo-grille", (root, params) => {
       const ajouter = (cmd) => {
         const b = h("button", { class: "robo-cmd" + (cmd[0] === "r" ? " rep" : relatif ? " mot" : ""), type: "button", "aria-label": roboCarte(cmd, relatif).nom },
           cmd[0] === "r" ? `🔁 ${cmd[1]}×` : relatif ? `${roboCarte(cmd, relatif).t} ${cmd === "av" ? "avance" : cmd === "g" ? "à gauche" : "à droite"}` : ROBO_CMD[cmd].t);
-        b.addEventListener("mouseenter", () => { if (cp) Voice.speak(roboCarte(cmd, relatif).nom); });
+        b.addEventListener("mouseenter", () => { if (cp) Voice.survol(roboCarte(cmd, relatif).nom); });
         b.addEventListener("click", () => {
           if (fini || enCours) return;
           if (prog.length >= N) { Sound.bad(); Voice.speak("Il n'y a plus de place. " + (m.repete ? "Utilise la carte « fois » !" : "")); return; }

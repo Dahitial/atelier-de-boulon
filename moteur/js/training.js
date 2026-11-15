@@ -53,7 +53,7 @@ App.register("sommaire", (root, params) => {
     App._periodes[subjId] = periode;
     area.appendChild(h("div", { class: "periodes" }, ...periodes.map((p) => {
       const b = h("button", { class: "periode" + (p === periode ? " on" : ""), type: "button", onclick: () => { Sound.click(); App.go("sommaire", { subject: subjId, periode: p }); } }, "Période " + p);
-      b.addEventListener("mouseenter", () => { Sound.hover(); if (NIVEAU.toutEnVoix) Voice.speak("Période " + p); });
+      b.addEventListener("mouseenter", () => { Sound.hover(); if (NIVEAU.toutEnVoix) Voice.survol("Période " + p); });
       return b;
     })));
   }
@@ -157,7 +157,7 @@ function runSession(root, { title, color = "#f6c445", questions, onFinish, backT
     [...prog.children].forEach((s, i) => { s.classList.toggle("cur", i === idx); });
     panel.innerHTML = "";
     tries = 0; done = false;
-    const speakBtn = h("button", { class: "btn round sky speak", title: "Écouter la consigne", "aria-label": "Écouter la consigne", onclick: () => Voice.speak(q.consigne) }, "🔊");
+    const speakBtn = h("button", { class: "btn round sky speak", title: "Écouter la consigne", "aria-label": "Écouter la consigne", onclick: () => Voice.speak(q.consigne, { consigne: true }) }, "🔊");
     panel.appendChild(h("div", { class: "consigne" }, speakBtn, h("span", null, q.consigne)));
     const body = h("div", { class: "exo-body" });
     panel.appendChild(body);
@@ -172,7 +172,8 @@ function runSession(root, { title, color = "#f6c445", questions, onFinish, backT
         Sound.pop(); Voice.speak("Abracadabra ! Une mauvaise réponse a disparu.");
       } }, "🎩 Joker"));
     if (ctrl && ctrl.needsValidate) actions.appendChild(h("button", { class: "btn green", onclick: submit }, "✔ Valider"));
-    if (q.type !== "dictee" && !(ctrl && ctrl.voixPropre)) Voice.speak(q.consigne);   // certains types lisent eux-mêmes
+    if (q.type !== "dictee" && !(ctrl && ctrl.voixPropre)) Voice.speak(q.consigne, { consigne: true });   // certains types lisent eux-mêmes
+    if (q.type !== "dictee") attendreConsigne(body);   // au CP : on écoute d'abord, on répond ensuite
   }
 
   function submit() {
@@ -282,7 +283,7 @@ App.register("defi", (root, params = {}) => {
     App._periodeDefi = periode;
     root.appendChild(h("div", { class: "abs periodes defi", style: { right: "40px", top: "284px" } }, ...periodes.map((p) => {
       const b = h("button", { class: "periode" + (p === periode ? " on" : ""), type: "button", onclick: () => { Sound.click(); App.go("defi", { periode: p }); } }, "Période " + p);
-      b.addEventListener("mouseenter", () => { Sound.hover(); if (NIVEAU.toutEnVoix) Voice.speak("Période " + p); });
+      b.addEventListener("mouseenter", () => { Sound.hover(); if (NIVEAU.toutEnVoix) Voice.survol("Période " + p); });
       return b;
     })));
   }
@@ -297,7 +298,7 @@ App.register("defi", (root, params = {}) => {
         ch.picto ? h("span", { class: "defi-picto", html: picto(ch.picto, 44) }) : null,
         h("span", null, ch.title), h("span", { style: { whiteSpace: "nowrap", fontSize: "12px", marginLeft: "6px" } }, `🏆 ${rec.wins} • 🦊 ${rec.losses}`));
       /* tout en voix (CP) : le chapitre se dit au survol */
-      if (NIVEAU.toutEnVoix) b.addEventListener("mouseenter", () => Voice.speak(ch.title));
+      if (NIVEAU.toutEnVoix) b.addEventListener("mouseenter", () => Voice.survol(ch.title));
       col.appendChild(b);
     });
     area.appendChild(col);

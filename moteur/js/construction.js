@@ -91,7 +91,7 @@ App.register("atelier-construction", (root) => {
         h("button", { class: "btn small green", onclick: () => { Sound.click(); App.go(j.id, { defi: Math.min(c[j.id], j.nb - 1) }); } }, "Défis"),
         h("button", { class: "btn small white", onclick: () => { Sound.click(); App.go(j.id, { libre: true }); } }, "Libre")));
     } else carte.appendChild(h("p", { class: "ac-condition" }, j.bientot ? "Bientôt dans l'atelier !" : `Pour l'ouvrir : ${j.condition}`));
-    if (cp) carte.addEventListener("mouseenter", () => Voice.speak(`${j.titre}. ${j.desc}` + (ouvert ? "" : j.bientot ? " Bientôt !" : ` Pour l'ouvrir : ${j.condition}.`)));
+    if (cp) carte.addEventListener("mouseenter", () => Voice.survol(`${j.titre}. ${j.desc}` + (ouvert ? "" : j.bientot ? " Bientôt !" : ` Pour l'ouvrir : ${j.condition}.`)));
     grille.appendChild(carte);
   });
   root.appendChild(grille);
@@ -378,7 +378,7 @@ App.register("puzzle", (root, params) => {
         h("span", { html: `<svg viewBox="-2 -2 56 56" width="56" height="56">${mini}</svg>` }),
         h("small", null, stock[fam] === Infinity ? "∞" : `× ${stock[fam]}`));
       b.addEventListener("click", () => { famille = fam; rot = 0; Sound.click(); Voice.speak(F.nom); majPalette(); dessiner(); });
-      if (NIVEAU.toutEnVoix) b.addEventListener("mouseenter", () => Voice.speak(F.nom));
+      if (NIVEAU.toutEnVoix) b.addEventListener("mouseenter", () => Voice.survol(F.nom));
       palette.appendChild(b);
     });
     palette.appendChild(h("button", { class: "btn small sky", onclick: () => { rot++; Sound.pop(); majPalette(); dessiner(); } }, "↻ Tourner"));
@@ -868,7 +868,7 @@ App.register("machine", (root, params) => {
         if (v === D.sensFin) { fini = true; montre = true; b.classList.add("green"); C.gagne("Oui ! Une roue sur deux tourne dans le même sens."); }
         else { b.disabled = true; C.rate("Non : suis les roues une par une, en changeant de sens à chaque fois."); }
       } }, txt);
-      if (NIVEAU.toutEnVoix) b.addEventListener("mouseenter", () => Voice.speak(txt.slice(2)));
+      if (NIVEAU.toutEnVoix) b.addEventListener("mouseenter", () => Voice.survol(txt.slice(2)));
       rangee.appendChild(b);
     });
     zone.appendChild(rangee);

@@ -24,7 +24,7 @@
 
 /* dit un texte, puis lance la suite (sauf si une autre phrase a pris la place entre-temps) */
 function direPuis(texte, suite, pause = 250) {
-  Voice.speak(texte, { onend: () => { const seq = Voice._seq; setTimeout(() => { if (Voice._seq === seq) suite(); }, pause); } });
+  Voice.speak(texte, { consigne: true, onend: () => { const seq = Voice._seq; setTimeout(() => { if (Voice._seq === seq) suite(); }, pause); } });
 }
 
 /* gros bouton jaune « écouter » */
@@ -40,7 +40,7 @@ function carteImage(nom, taille = 150, parle = true) {
   if (parle) {
     const dire = () => Voice.speak(motDe(nom));
     c.addEventListener("click", dire);
-    if (NIVEAU.toutEnVoix) c.addEventListener("mouseenter", dire);
+    if (NIVEAU.toutEnVoix) c.addEventListener("mouseenter", () => Voice.survol(motDe(nom)));
   }
   return c;
 }
@@ -55,7 +55,7 @@ function pointsSvg(n, couleur = "#2e86de") {
 Object.assign(Exercise.types, {
   /* ---------- écoute : quelle image correspond au mot entendu ? ---------- */
   ecoute(box, q, ctx) {
-    const dire = () => Voice.speak(q.mot, { rate: 0.85 });
+    const dire = () => Voice.speak(q.mot, { rate: 0.85, consigne: true });
     box.appendChild(boutonEcoute(dire, "Écouter le mot"));
     const ctrl = this.choiceButtons(box, q, ctx, q.choix.map((nom, i) => ({ svg: picto(nom, 170), img: true, cls: "carte", aria: "Image " + (i + 1) })), (i) => i === q.answer);
     ctrl.voixPropre = true;
@@ -153,7 +153,7 @@ Object.assign(Exercise.types, {
     const items = shuffle(q.objets.map(([nom, k]) => ({ nom, bon: k, dans: -1 })));
     items.forEach((it) => {
       it.el = h("button", { class: "tri-objet", type: "button", "aria-label": motDe(it.nom), html: picto(it.nom, 84) });
-      it.el.addEventListener("mouseenter", () => { if (NIVEAU.toutEnVoix && !locked && !glisse && performance.now() > muetJusqua) Voice.speak(motDe(it.nom)); });
+      it.el.addEventListener("mouseenter", () => { if (NIVEAU.toutEnVoix && !locked && !glisse && performance.now() > muetJusqua) Voice.survol(motDe(it.nom)); });
       it.el.addEventListener("click", (e) => {
         e.stopPropagation();
         if (locked || ignorerClic) return;
@@ -269,7 +269,7 @@ Object.assign(Exercise.types, {
     };
     cartes.forEach((c) => {
       c.el = h("button", { class: "suite-carte", type: "button", "aria-label": motDe(c.nom), html: picto(c.nom, 110) });
-      c.el.addEventListener("mouseenter", () => { if (NIVEAU.toutEnVoix && !locked) Voice.speak(motDe(c.nom)); });
+      c.el.addEventListener("mouseenter", () => { if (NIVEAU.toutEnVoix && !locked) Voice.survol(motDe(c.nom)); });
       c.el.addEventListener("click", () => {
         if (locked) return;
         Sound.pop();
@@ -303,7 +303,7 @@ Object.assign(Exercise.types, {
 /* ---------- écouter, puis lire : cliquer sur ce qui écrit ce que Boulon a dit ---------- */
 Object.assign(Exercise.types, {
   "ecoute-ecrit"(box, q, ctx) {
-    const dire = () => Voice.speak(q.dit, { rate: 0.8 });
+    const dire = () => Voice.speak(q.dit, { rate: 0.8, consigne: true });
     box.appendChild(boutonEcoute(dire, "Écouter encore"));
     const ctrl = this.choiceButtons(box, q, ctx, q.choix.map((t, i) => ({ text: t, cls: "ecrit", aria: "Choix " + (i + 1) })), (i) => i === q.answer);
     ctrl.voixPropre = true;

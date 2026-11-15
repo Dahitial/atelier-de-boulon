@@ -391,9 +391,19 @@ const Voice = {
     return parts.filter((p) => p.son || /[\p{L}\p{N}+→]/u.test(p.texte));
   },
   audio: null,
+  /* Quand Boulon parle, un survol ne le coupe jamais (Voice.survol) : seul ce qui est dit au survol (opts.survol)
+     peut être remplacé par un autre survol. Une limite de temps évite qu'une phrase reste protégée si la voix
+     ne prévient pas de sa fin. */
+  _protege: 0, _protegeJusqua: 0,
   speak(text, opts = {}) {
     if (!Store.data.settings.voice) { opts.onend && opts.onend(); return; }
     const seq = ++this._seq;
+    if (!opts.survol) {
+      this._protege = seq;
+      this._protegeJusqua = performance.now() + Math.min(20000, 2000 + String(text).length * 95);
+      const suite = opts.onend;
+      opts = { ...opts, onend: () => { if (this._protege === seq) this._protege = 0; suite && suite(); } };
+    } else this._protege = 0;
     if (this.audio) { this.audio.pause(); this.audio = null; }
     const parts = this.morceaux(text);
     if (parts.length === 1 && parts[0].texte != null) { this._dire(text, opts, seq); return; }
@@ -465,6 +475,10 @@ const Voice = {
     // annuler puis parler aussitôt fait bégayer Chrome/Edge : on laisse un court instant
     if (busy) setTimeout(say, 120); else say();
   },
+  /* Boulon est-il en train de dire une phrase (autre chose qu'un nom au survol) ? */
+  protegee() { return !!this._protege && this._protege === this._seq && performance.now() < this._protegeJusqua; },
+  /* ce qu'on dit au survol (un objet, une image, un choix) : jamais par-dessus une phrase de Boulon */
+  survol(text, opts = {}) { if (!this.protegee()) this.speak(text, { ...opts, survol: true }); },
   stop() {
     this._seq++;
     if (this.audio) { this.audio.pause(); this.audio = null; }
@@ -563,6 +577,7 @@ const App = {
     const api = {
       el: wrap, bubble: null,
       say: (t, opts = {}) => {
+        if (opts.survol && Voice.protegee()) return;   // au survol : Boulon finit d'abord sa phrase
         if (api.bubble) api.bubble.remove();
         if (!t) return;
         api.dernier = t;
@@ -593,7 +608,7 @@ const App = {
         api.bubble = b;
         if (speak && opts.speak !== false) {
           wrap.classList.add("talking");
-          Voice.speak(b.textContent, { onend: () => wrap.classList.remove("talking") });
+          Voice.speak(b.textContent, { survol: !!opts.survol, onend: () => wrap.classList.remove("talking") });
           setTimeout(() => wrap.classList.remove("talking"), Math.min(9000, 300 + b.textContent.length * 70));
         }
       },

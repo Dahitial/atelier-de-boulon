@@ -64,7 +64,7 @@ const Objets = {
     const choix = shuffle([f.bonne, ...f.mauvaises]);
     const btns = choix.map((c) => {
       const b = h("button", { class: "choice", type: "button" }, c);
-      if (NIVEAU.toutEnVoix) b.addEventListener("mouseenter", () => Voice.speak(c));
+      if (NIVEAU.toutEnVoix) b.addEventListener("mouseenter", () => Voice.survol(c));
       b.addEventListener("click", () => repondre(c, b));
       return b;
     });
@@ -103,7 +103,7 @@ const Objets = {
     const corps = h("div", { class: "exo-body" });
     const fin = h("p", { class: "savais-fin" });
     const actions = h("div", { class: "row", style: { justifyContent: "flex-end" } });
-    const parler = h("button", { class: "btn round sky speak", title: "Écouter la consigne", "aria-label": "Écouter la consigne", onclick: () => Voice.speak(q.consigne) }, "🔊");
+    const parler = h("button", { class: "btn round sky speak", title: "Écouter la consigne", "aria-label": "Écouter la consigne", onclick: () => Voice.speak(q.consigne, { consigne: true }) }, "🔊");
     const node = h("div", { class: "col defi-jour" },
       h("h2", { class: "title dark" }, "Le défi du jour"),
       h("p", { class: "muted", style: { margin: 0 } }, `Une question de « ${l.title} ». Tu as un seul essai !`),
@@ -134,7 +134,8 @@ const Objets = {
     const ctrl = Exercise.mount(corps, q, { submit: valider });
     if (ctrl && ctrl.needsValidate) actions.appendChild(h("button", { class: "btn green", onclick: valider }, "✔ Valider"));
     actions.appendChild(h("button", { class: "btn white", onclick: () => close() }, "Plus tard"));
-    if (q.type !== "dictee" && !(ctrl && ctrl.voixPropre)) Voice.speak(q.consigne);
+    if (q.type !== "dictee" && !(ctrl && ctrl.voixPropre)) Voice.speak(q.consigne, { consigne: true });
+    if (q.type !== "dictee") attendreConsigne(corps);
   },
 };
 
@@ -231,7 +232,7 @@ App.register("couleurs", (root) => {
   COULEURS_BASE.forEach((c) => {
     const p = h("button", { class: "coul-pot", type: "button", "aria-label": "Peinture " + c.nom, html: dessinePot(c) });
     p.appendChild(h("span", null, c.nom));
-    p.addEventListener("mouseenter", () => { if (NIVEAU.toutEnVoix) Voice.speak(c.nom); });
+    p.addEventListener("mouseenter", () => { if (NIVEAU.toutEnVoix) Voice.survol(c.nom); });
     p.addEventListener("click", () => {
       if (choix.length >= 2) return;
       Sound.pop(); choix.push(c.id); p.classList.add("sel");

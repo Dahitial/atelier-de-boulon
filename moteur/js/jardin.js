@@ -453,7 +453,7 @@ App.register("jardin", (root, params) => {
     E.etapes.forEach((nom, i) => {
       const el = h("div", { class: "jd-etape" + (i === etape ? " ici" : i < etape ? " passee" : "") },
         h("span", { html: iconeEtape(p.espece, i) }), h("small", null, nom));
-      if (cp) el.addEventListener("mouseenter", () => Voice.speak(nom + (i === etape ? " : ta plante en est là !" : "")));
+      if (cp) el.addEventListener("mouseenter", () => Voice.survol(nom + (i === etape ? " : ta plante en est là !" : "")));
       frise.appendChild(el);
     });
     cote.appendChild(frise);
@@ -491,7 +491,7 @@ App.register("jardin", (root, params) => {
         Sound.good(); App.go("jardin", { achat: esp });
       }, a.ecrous >= G.prix));
     }
-    if (cp) carte.addEventListener("mouseenter", () => Voice.speak(G.nom.charAt(0).toUpperCase() + G.nom.slice(1) + (bloquee ? "." : n ? "." : `, ${G.prix} écrous.`)));
+    if (cp) carte.addEventListener("mouseenter", () => Voice.survol(G.nom.charAt(0).toUpperCase() + G.nom.slice(1) + (bloquee ? "." : n ? "." : `, ${G.prix} écrous.`)));
     bas.appendChild(carte);
   });
   bas.appendChild(h("div", { class: "jd-liens" },
@@ -526,7 +526,7 @@ App.register("jardin", (root, params) => {
     const zone = h("div", { class: "savais-reponses" });
     choix.forEach((c) => {
       const b = h("button", { class: "choice", type: "button" }, c);
-      if (cp) b.addEventListener("mouseenter", () => Voice.speak(c));
+      if (cp) b.addEventListener("mouseenter", () => Voice.survol(c));
       b.addEventListener("click", () => {
         [...zone.children].forEach((x) => { x.disabled = true; if (x.textContent === bonne) x.classList.add("right"); });
         p.observeLe = auj; Store.save();
@@ -579,7 +579,7 @@ App.register("herbier", (root) => {
       h("small", { class: "herbier-cat" }, date ? E.categorie : "à faire pousser"),
       date ? h("p", null, E.fiche) : null,
       date ? h("em", null, "Récoltée " + Revision.dateFr(date).replace(/^le /, "le ")) : null);
-    if (NIVEAU.toutEnVoix && date) c.addEventListener("mouseenter", () => Voice.speak(`${E.nom}, ${E.categorie}. ${E.fiche}`));
+    if (NIVEAU.toutEnVoix && date) c.addEventListener("mouseenter", () => Voice.survol(`${E.nom}, ${E.categorie}. ${E.fiche}`));
     grille.appendChild(c);
   });
   root.appendChild(grille);

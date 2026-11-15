@@ -56,6 +56,20 @@ function ordreJuste(construit, words) {
   return ordresAcceptes(words).some((v) => construit.every((w, k) => w.toLowerCase() === v[k].toLowerCase()));
 }
 
+/* Au CP, les réponses ne se cliquent qu'une fois la consigne lue : l'enfant écoute d'abord au lieu de
+   cliquer au hasard (test avec un enfant, 15/11/2026). Pendant la lecture, le corps de l'exercice est un peu
+   pâle et ne réagit pas ; il se réveille à la fin de la consigne (ou au bout d'un temps limite). */
+function attendreConsigne(corps) {
+  if (typeof NIVEAU === "undefined" || !NIVEAU.toutEnVoix || !Store.data.settings.voice) return () => {};
+  corps.classList.add("attend-consigne");
+  let fini = false, libre = 0;
+  const liberer = () => { if (fini) return; fini = true; corps.classList.remove("attend-consigne"); clearInterval(t); };
+  /* la consigne et le mot qui la suit sont protégés (Voice.protegee) ; deux relevés de suite sans lecture = fini */
+  const t = setInterval(() => { libre = Voice.protegee() ? 0 : libre + 1; if (libre >= 3 || !corps.isConnected) liberer(); }, 200);
+  setTimeout(liberer, 15000);
+  return liberer;
+}
+
 const Exercise = {
   mount(box, q, ctx) {
     const fn = this.types[q.type];
@@ -78,7 +92,7 @@ const Exercise = {
       const b = h("button", { class: "choice" + (lab.img ? " img" : "") + (lab.cls ? " " + lab.cls : ""), type: "button" });
       if (lab.aria) b.setAttribute("aria-label", lab.aria);
       /* tout en voix (CP) : le nom de l'image est dit au survol, pour l'enfant qui ne lit pas encore */
-      if (lab.dire && NIVEAU.toutEnVoix) b.addEventListener("mouseenter", () => { if (!locked) Voice.speak(lab.dire); });
+      if (lab.dire && NIVEAU.toutEnVoix) b.addEventListener("mouseenter", () => { if (!locked) Voice.survol(lab.dire); });
       if (lab.svg) b.innerHTML = lab.svg;
       else if (lab.e) { b.append(lab.e); if (lab.label) b.append(h("small", null, lab.label)); }
       else b.innerHTML = lab.html != null ? lab.html : escapeHtml(lab.text);
