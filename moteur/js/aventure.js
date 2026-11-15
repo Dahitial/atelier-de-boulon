@@ -75,14 +75,18 @@ function retirerMedailles(ids) {
 }
 
 /* les dates des visites : numéro du jour, lundi de la semaine (AAAA-MM-JJ) */
-const avNumJour = (d) => Math.round(Date.parse(d + "T12:00:00") / 864e5);
-const avLundi = (d) => { const t = Date.parse(d + "T12:00:00"); return new Date(t - ((new Date(t).getDay() + 6) % 7) * 864e5).toISOString().slice(0, 10); };
+/* (en temps universel, sans arrondi : le résultat ne dépend pas du fuseau horaire de l'ordinateur) */
+const avNumJour = (d) => { const [y, m, j] = d.split("-").map(Number); return Date.UTC(y, m - 1, j) / 864e5; };
+const avJourSemaine = (n) => (n + 4) % 7;   // 0 = dimanche (le 1er janvier 1970 était un jeudi)
+const avLundi = (d) => { const n = avNumJour(d); return new Date((n - (avJourSemaine(n) + 6) % 7) * 864e5).toISOString().slice(0, 10); };
 
 /* Une VISITE = un jour où l'enfant vient jouer (plusieurs fois le même jour ne comptent qu'une fois).
    Le temps du jeu avance aux visites, pas au calendrier : un enfant qui vient une fois par semaine ne
    perd rien pendant son absence. La série compte les rendez-vous tenus selon le rythme choisi par le
-   parent (Parents.reglages().rythme) : "semaine" (par défaut : une visite par semaine), "jour" (tous les
-   jours) ou "jours" (certains jours de la semaine, joursSemaine : 0 = dimanche … 6 = samedi). */
+   parent pour cet enfant (Parents.pour(u).rythme) : "semaine" (par défaut : une visite par semaine),
+   "jour" (chaque jour d'ouverture) ou "jours" (certains jours, joursSemaine : 0 = dimanche … 6 = samedi).
+   Un jour fermé ne casse jamais la série ; une visite hors rendez-vous (jeu libre) ne la casse pas et ne
+   l'allonge pas. */
 const Aventure = {
   PLAFOND_SEMAINE: 120,  // écrous « répétables » (séries, révisions, défis) gagnés au plus par semaine
   BONUS_MEDAILLE: 10,
@@ -130,28 +134,30 @@ const Aventure = {
     return n;
   },
   /* ---------- visites et série ---------- */
-  rythme() {
-    const p = typeof Parents !== "undefined" ? Parents.reglages() : {};
-    return { rythme: ["jour", "jours", "semaine"].includes(p.rythme) ? p.rythme : "semaine", jours: Array.isArray(p.joursSemaine) ? p.joursSemaine : [] };
+  /* le rythme de l'enfant ; jours = les jours de rendez-vous ("jour" : chaque jour d'ouverture) */
+  rythme(u = Store.user) {
+    if (typeof Parents === "undefined") return { rythme: "jour", jours: [0, 1, 2, 3, 4, 5, 6] };
+    const p = Parents.pour(u);
+    return { rythme: p.rythme, jours: p.rythme === "jours" ? [...p.joursSemaine] : p.rythme === "jour" ? [...p.ouverts] : [] };
   },
-  cleRythme(R) { return R.rythme + (R.rythme === "jours" ? ":" + R.jours.join("") : ""); },
+  cleRythme(R) { return R.rythme + (R.rythme === "semaine" ? "" : ":" + [...R.jours].sort().join("")); },
   /* « 3 semaines », « 3 jours », « 3 rendez-vous » */
-  serieTexte(n) {
-    const r = this.rythme().rythme;
+  serieTexte(n, u = Store.user) {
+    const r = this.rythme(u).rythme;
     return r === "jour" ? `${n} jour${n > 1 ? "s" : ""}` : r === "semaine" ? `${n} semaine${n > 1 ? "s" : ""}` : `${n} rendez-vous`;
   },
   /* « demain », « la semaine prochaine », « au prochain rendez-vous » */
-  prochainRdv() { const r = this.rythme().rythme; return r === "jour" ? "demain" : r === "semaine" ? "la semaine prochaine" : "au prochain rendez-vous"; },
+  prochainRdv(u = Store.user) { const r = this.rythme(u).rythme; return r === "jour" ? "demain" : r === "semaine" ? "la semaine prochaine" : "au prochain rendez-vous"; },
   /* la série après une visite le jour d, la visite précédente étant le jour « avant » (ou "") */
   serieApres(serie, avant, d, R) {
-    if (!avant) return R.rythme === "jours" && !R.jours.includes(new Date(d + "T12:00:00").getDay()) ? 0 : 1;
-    if (R.rythme === "jour") return avNumJour(d) - avNumJour(avant) === 1 ? serie + 1 : 1;
     if (R.rythme === "semaine") {
+      if (!avant) return 1;
       const k = Math.round((avNumJour(avLundi(d)) - avNumJour(avLundi(avant))) / 7);
       return k === 0 ? Math.max(1, serie) : k === 1 ? serie + 1 : 1;
     }
-    /* certains jours : un jour prévu manqué casse la série ; venir un autre jour ne la casse pas, ne l'allonge pas */
-    const prevu = (n) => R.jours.includes(new Date(n * 864e5 + 432e5).getUTCDay());
+    /* jours de rendez-vous : un rendez-vous manqué casse la série ; venir un autre jour ne la casse pas, ne l'allonge pas */
+    const prevu = (n) => R.jours.includes(avJourSemaine(n));
+    if (!avant) return prevu(avNumJour(d)) ? 1 : 0;
     let manque = false;
     for (let n = avNumJour(avant) + 1; n < avNumJour(d) && !manque; n++) manque = prevu(n);
     const base = manque ? 0 : serie;
@@ -172,13 +178,13 @@ const Aventure = {
   journee(u) {
     const a = this.etat(u), auj = Revision.jour(0);
     if (a.dernierJour === auj) return;
-    const R = this.rythme();
+    const R = this.rythme(u);
     if (a.serieRythme !== this.cleRythme(R)) this.recalculerSerie(u, R);
     a.serie = this.serieApres(a.serie, a.dernierJour, auj, R);
     a.serieMax = Math.max(a.serieMax, a.serie);
     a.dernierJour = auj;
     a.visites += 1;
-    this.gagner(u, 3 + Math.min(a.serie, 7), a.serie > 1 ? `${this.serieTexte(a.serie)} de suite !` : "bonus de la visite");
+    this.gagner(u, 3 + Math.min(a.serie, 7), a.serie > 1 ? `${this.serieTexte(a.serie, u)} de suite !` : "bonus de la visite");
   },
   /* médailles nouvellement gagnées */
   verifier(u) {

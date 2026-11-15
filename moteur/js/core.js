@@ -195,6 +195,7 @@ const Backup = {
       inventions: typeof Inventions !== "undefined" ? Inventions.nettoyer(u.inventions) : undefined,
       robotique: typeof Robotique !== "undefined" ? Robotique.nettoyer(u.robotique) : undefined,
       journal: typeof Journal !== "undefined" ? Journal.nettoyer(u.journal) : undefined,
+      reglages: typeof Parents !== "undefined" ? Parents.nettoyerReglages(u.reglages) : undefined,
       sciences: u.sciences && typeof u.sciences === "object" && u.sciences.vus && typeof u.sciences.vus === "object"
         ? { vus: Object.fromEntries(Object.entries(u.sciences.vus).filter(([k]) => /^[a-z]{2,12}$/.test(k)).map(([k, v]) => [k, String(v).slice(0, 10)])) } : undefined,
       histoire: u.histoire && typeof u.histoire === "object" ? {

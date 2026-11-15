@@ -685,6 +685,26 @@ canvas.paint { background: #fff; border: 4px solid var(--ink); border-radius: 16
 .pa-titre { font-family: var(--title-font); font-size: 22px; margin: 14px 0 4px; }
 .pa-titre:first-child { margin-top: 0; }
 .pa-aide { font-size: 15px; margin: 4px 0; color: #4a4157; }
+/* réglages : pour qui, résumé, réglages propres à un enfant */
+.pa-pour { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 0 0 8px; }
+.pa-pour b { font-size: 17px; margin-right: 4px; }
+.pa-resume { margin-bottom: 4px; }
+.pa-bandeau { display: flex; align-items: center; gap: 12px; justify-content: space-between; border: 2px dashed var(--violet); border-radius: 14px; padding: 8px 12px; margin: 6px 0 4px; background: #f3eefb; font-size: 16px; }
+.pa-gris { opacity: .45; }
+.pa-gris .btn { cursor: default; }
+.pa-propre { color: var(--violet); white-space: nowrap; }
+.pa-enfant.on .pa-propre { color: #fff; }
+.btn.pa-rdv, .btn.pa-rdv:disabled { opacity: .75; cursor: default; }
+/* écrans de nuit et de jour fermé */
+.pa-ciel { inset: 0; background: rgba(16, 22, 52, .72); }
+.pa-etoiles { left: 0; right: 0; top: 0; height: 170px; }
+.pa-ferme { left: 130px; right: 130px; top: 150px; text-align: center; padding: 22px 30px; }
+.pa-ferme.nuit { background: #e9e6f7; }
+.pa-ferme h2 { font-size: 34px; margin: 6px 0; }
+.pa-ferme p { font-size: 22px; margin: 6px 0; }
+.pa-ferme-boulon { position: relative; width: 170px; height: 180px; margin: 0 auto; }
+.pa-ferme-boulon > div { width: 150px; height: 170px; margin: 0 auto; }
+.pa-zzz { position: absolute; right: -34px; top: 0; font-size: 34px; font-weight: 800; color: #5a4a8b; }
 .pa-choix { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 8px; }
 @media print {
   .pa-droite, .pa-droite * { visibility: visible; }

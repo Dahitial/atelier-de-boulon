@@ -254,7 +254,8 @@ const ICONE_HAUT_PARLEUR = `<svg class="hp" width="24" height="24" viewBox="0 0 
 App.register("atelier", (root, params) => {
   const u = Store.user;
   if (!u) { App.go("identif"); return; }
-  if (Parents.reglages().mode === "pause" && Parents.depasse(u)) { App.go("pause"); return; }
+  const bloque = Parents.bloque(u);   // la nuit, un jour fermé, ou la séance finie (réglages du parent)
+  if (bloque) { App.go(bloque); return; }
   Aventure.demarrer(u); Aventure.journee(u);
   if (typeof Jardin !== "undefined") Jardin.maj(u);   // la plante pousse aux jours de visite
   Aventure.conclure(u);   // bonus du jour, médailles

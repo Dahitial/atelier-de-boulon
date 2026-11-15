@@ -118,16 +118,17 @@ function objetAtelier(o) {
 
 const Art = {
   /* ---------------- Personnages ---------------- */
-  /* style = { couleur, tete, yeux, cou } ; par défaut, celui de l'élève (boutique de l'aventure) */
-  boulon(style) {
+  /* style = { couleur, tete, yeux, cou } ; par défaut, celui de l'élève (boutique de l'aventure).
+     opt.dort : yeux et bouche fermés, ampoule éteinte (écran de nuit) */
+  boulon(style, opt = {}) {
     const st = style || (typeof Aventure !== "undefined" ? Aventure.style() : {}) || {};
     const [c1, c2] = BOULON_COULEURS[st.couleur] || BOULON_COULEURS.orange;
     const acc = (id) => (id && BOULON_ACCESSOIRES[id]) || "";
     return `<svg viewBox="0 0 150 170" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <ellipse cx="75" cy="164" rx="44" ry="6" fill="rgba(0,0,0,.25)"/>
-      <g class="bob">
+      <g class="${opt.dort ? "" : "bob"}">
         <line x1="75" y1="30" x2="75" y2="12" ${S}/>
-        <circle class="bulb" cx="75" cy="10" r="8" fill="#ffe27a" ${S}/>
+        <circle class="${opt.dort ? "" : "bulb"}" cx="75" cy="10" r="8" fill="${opt.dort ? "#8a8399" : "#ffe27a"}" ${S}/>
         <rect x="55" y="118" width="14" height="30" rx="6" fill="#9c6b3c" ${S}/>
         <rect x="81" y="118" width="14" height="30" rx="6" fill="#9c6b3c" ${S}/>
         <ellipse cx="62" cy="152" rx="14" ry="7" fill="#5a4a6b" ${S}/>
@@ -141,13 +142,14 @@ const Art = {
         <rect x="28" y="28" width="94" height="96" rx="34" fill="${c1}" ${S}/>
         <path d="M40 40 q35 -14 70 0" fill="none" stroke="${c2}" stroke-width="6" stroke-linecap="round"/>
         <rect x="40" y="48" width="70" height="44" rx="20" fill="#fff8ea" ${S}/>
-        <circle cx="60" cy="68" r="10" fill="#fff" ${S}/>
+        ${opt.dort ? `<path d="M50 68 q10 9 20 0 M80 68 q10 9 20 0" fill="none" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>
+        <path d="M68 92 q7 4 14 0" fill="none" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>` : `<circle cx="60" cy="68" r="10" fill="#fff" ${S}/>
         <circle cx="90" cy="68" r="10" fill="#fff" ${S}/>
         <circle cx="62" cy="70" r="5" fill="${INK}"/>
         <circle cx="92" cy="70" r="5" fill="${INK}"/>
         <circle cx="64" cy="67" r="1.8" fill="#fff"/>
         <circle cx="94" cy="67" r="1.8" fill="#fff"/>
-        <ellipse class="mouth" cx="75" cy="92" rx="11" ry="6" fill="#e4572e" ${S}/>
+        <ellipse class="mouth" cx="75" cy="92" rx="11" ry="6" fill="#e4572e" ${S}/>`}
         <circle cx="46" cy="104" r="5" fill="#f6c445" ${S}/>
         <circle cx="104" cy="104" r="5" fill="#f6c445" ${S}/>
         <circle cx="75" cy="110" r="6" fill="#5bc0eb" ${S}/>
