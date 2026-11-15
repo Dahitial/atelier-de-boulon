@@ -247,6 +247,12 @@ App.register("resultat", (root, params) => {
     <p style="font-size:22px;margin:6px 0 0">Meilleure note : <b>${u.lessons[l.id].best}/20</b> • essai n° ${u.lessons[l.id].tries}</p>
     <p class="rev-memo">🧠 Mémoire ${Revision.memoire(u.lessons[l.id].boite)} • révision ${Revision.dateFr(u.lessons[l.id].revoir)}</p>`;
   root.appendChild(box);
+  /* les écrous gagnés par cette leçon, en grand (test avec un enfant : il ne les voyait pas passer) */
+  const g = typeof Aventure !== "undefined" && Aventure.dernierGain;
+  const gain = g && g.lecon === l.id && g.n > 0 ? g.n : 0;
+  if (gain) box.appendChild(h("div", { style: { textAlign: "center" } },
+    h("span", { class: "res-gain" }, h("b", null, `🔩 +${gain} écrou${gain > 1 ? "s" : ""}`), h("small", null, g.raisons.slice(0, 3).join(", ")))));
+  if (g) Aventure.dernierGain = null;
   const nxt = lessonAfter(l);
   const row = h("div", { class: "row", style: { justifyContent: "center", marginTop: "18px", flexWrap: "wrap" } },
     h("button", { class: "btn sky", onclick: () => App.go("exo", { id: l.id }) }, "↻ Recommencer"),
@@ -255,7 +261,7 @@ App.register("resultat", (root, params) => {
   box.appendChild(row);
   App.backButton(root, "sommaire", { subject: l.subject });
   const m = App.mascot(root, { x: 860, y: 590 });
-  setTimeout(() => m.say(Messages.endFor(note)), 300);
+  setTimeout(() => m.say(Messages.endFor(note) + (gain && NIVEAU.toutEnVoix ? ` Tu as gagné ${gain} écrou${gain > 1 ? "s" : ""} !` : "")), 300);
   if (st === 3) { Sound.fanfare(); App.confetti(); } else if (st >= 1) Sound.good();
 });
 

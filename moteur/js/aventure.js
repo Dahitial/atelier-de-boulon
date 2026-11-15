@@ -119,6 +119,9 @@ const Aventure = {
   PLAFOND_SEMAINE: 120,  // écrous « répétables » (séries, révisions, défis) gagnés au plus par semaine
   BONUS_MEDAILLE: 10,
   _file: [],           // messages à afficher
+  _medailles: [],      // médailles gagnées, remises une par une (Aventure.ceremonie)
+  _bonusVisite: 0,     // bonus de la première visite du jour, que l'atelier dit (CP)
+  dernierGain: null,   // écrous gagnés par la dernière leçon : { lecon, n, raisons } (écran de résultat)
 
   /* ---------- état de l'élève ---------- */
   etat(u) {
@@ -212,7 +215,30 @@ const Aventure = {
     a.serieMax = Math.max(a.serieMax, a.serie);
     a.dernierJour = auj;
     a.visites += 1;
-    this.gagner(u, 3 + Math.min(a.serie, 7), a.serie > 1 ? `${this.serieTexte(a.serie, u)} de suite !` : "bonus de la visite");
+    this._bonusVisite = this.gagner(u, 3 + Math.min(a.serie, 7), a.serie > 1 ? `${this.serieTexte(a.serie, u)} de suite !` : "bonus de la visite");
+    if (this._bonusVisite) this._file[this._file.length - 1].bonusVisite = true;
+  },
+  /* l'atelier montre le bonus dans sa fenêtre : le petit message en haut de l'écran n'est plus utile */
+  prendreBonusVisite() {
+    const n = this._bonusVisite; this._bonusVisite = 0;
+    if (n) this._file = this._file.filter((m) => !m.bonusVisite);
+    return n;
+  },
+  /* la fenêtre du bonus de la visite, à l'arrivée dans l'atelier ; ensuite() quand l'enfant la ferme
+     (Boulon dit bonjour après, pas avant : test avec un enfant). Elle ne parle pas d'elle-même. */
+  fenetreBonusVisite(u, n, ensuite) {
+    const a = this.etat(u);
+    const texte = `Bonus de la visite : ${n} écrou${n > 1 ? "s" : ""} !` + (a.serie > 1 ? ` ${this.serieTexte(a.serie, u)} de suite !` : "");
+    let close;
+    close = App.modal(h("div", { class: "av-bonus" },
+      h("div", { class: "title dark av-bonus-titre" }, "🎁 Bonus de la visite !"),
+      h("div", { class: "av-bonus-n" }, `🔩 +${n}`),
+      a.serie > 1 ? h("p", null, `🔥 ${this.serieTexte(a.serie, u)} de suite !`) : h("p", null, "Content de te revoir !"),
+      h("div", { class: "row" },
+        h("button", { class: "btn sky", title: "Écouter", onclick: () => Voice.speak(texte) }, "🔊"),
+        h("button", { class: "btn green", onclick: () => close() }, "Super !"))),
+      { onClose: () => ensuite && ensuite() });
+    Sound.pop();
   },
   /* médailles nouvellement gagnées */
   verifier(u) {
@@ -223,7 +249,7 @@ const Aventure = {
       try { ok = m.ok(u); } catch (e) { ok = false; }
       if (!ok) continue;
       a.medailles[m.id] = Revision.jour(0);
-      this._file.push({ ic: m.icone, txt: ` Médaille : ${m.nom} !`, grand: true });
+      this._medailles.push(m);   // remise en grand (test avec un enfant : le petit message passait inaperçu)
       this.gagner(u, this.BONUS_MEDAILLE, "médaille");
     }
   },
@@ -252,10 +278,15 @@ const Aventure = {
   /* ---------- branchements sur le jeu ---------- */
   apresLecon(id, avant, note) {
     const u = Store.user; if (!u) return;
+    const debut = this._file.length;
     this.demarrer(u, { lecon: id, avant }); this.journee(u);
     const nouvelles = Math.max(0, starsFor(note) - starsFor(avant));
     if (nouvelles) this.gagner(u, nouvelles * 5, `${nouvelles} nouvelle${nouvelles > 1 ? "s" : ""} étoile${nouvelles > 1 ? "s" : ""}`);
     if (note >= 12) this.gagner(u, 2, "série terminée", true);
+    this.verifier(u);
+    /* les écrous de cette leçon, que l'écran de résultat montre en grand */
+    const gains = this._file.slice(debut).filter((m) => m.n);
+    this.dernierGain = { lecon: id, n: gains.reduce((s, m) => s + m.n, 0), raisons: [...new Set(gains.map((m) => m.raison))] };
     this.conclure(u);
   },
   apresRevision(note, corrigees) {
@@ -401,9 +432,34 @@ const Aventure = {
     };
   },
 
+  /* ---------- la remise de médaille : en grand, une par une, dite par Boulon au CP ---------- */
+  ceremonie() {
+    if (this._enCeremonie || !this._medailles.length || !document.body) return;
+    /* Boulon finit d'abord sa phrase (« Tu as gagné 37 écrous ! ») : rien ne le coupe ; une autre fenêtre
+       (le bonus de la visite, la fiche d'un objet…) se ferme d'abord */
+    if (Voice.protegee() || document.querySelector(".modal-back")) { clearTimeout(this._attenteCeremonie); this._attenteCeremonie = setTimeout(() => this.ceremonie(), 400); return; }
+    const m = this._medailles.shift();
+    this._enCeremonie = true;
+    const texte = `Nouvelle médaille : ${m.nom} ! Tu as réussi le défi : ${m.desc} Tu gagnes ${this.BONUS_MEDAILLE} écrous.`;
+    let close;
+    close = App.modal(h("div", { class: "av-ceremonie" },
+      h("div", { class: "title dark av-ceremonie-titre" }, "🎉 Nouvelle médaille !"),
+      h("div", { class: "av-ceremonie-medaille" }, icone(m.icone)),
+      h("h2", { class: "title dark" }, m.nom),
+      h("p", null, "✔ " + m.desc),
+      h("span", { class: "av-ceremonie-plus" }, `🔩 +${this.BONUS_MEDAILLE} écrous`),
+      h("p", { class: "av-ceremonie-aide" }, "Toutes tes médailles sont dans le coffre aux trésors."),
+      h("div", { class: "row" },
+        h("button", { class: "btn sky", onclick: () => Voice.speak(texte) }, "🔊 Réécouter"),
+        h("button", { class: "btn green", onclick: () => close() }, "Super !"))),
+      { onClose: () => { this._enCeremonie = false; if (this._medailles.length) setTimeout(() => this.ceremonie(), 350); } });
+    Sound.fanfare(); App.confetti(60);
+    if (NIVEAU.toutEnVoix) setTimeout(() => Voice.speak(texte), 400);
+  },
+
   /* ---------- petits messages en haut de l'écran ---------- */
   afficher() {
-    if (!this._file.length) return;
+    if (!this._file.length) { if (this._medailles.length) this.ceremonie(); return; }
     let zone = document.getElementById("toasts");
     if (!zone) { zone = h("div", { id: "toasts", "aria-live": "polite" }); document.body.appendChild(zone); }
     /* les gains d'écrous d'un même moment forment un seul message */
@@ -414,6 +470,7 @@ const Aventure = {
       const raisons = [...new Set(gains.map((m) => m.raison))];
       msgs.unshift({ txt: `🔩 +${n} écrou${n > 1 ? "s" : ""} — ${raisons.slice(0, 2).join(", ")}${raisons.length > 2 ? "…" : ""}` });
     }
+    if (this._medailles.length) setTimeout(() => this.ceremonie(), 600);
     msgs.slice(0, 5).forEach((m, i) => setTimeout(() => {
       const t = h("div", { class: "toast" + (m.grand ? " grand" : "") }, m.ic ? icone(m.ic) : null, m.txt);
       zone.appendChild(t);

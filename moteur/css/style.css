@@ -1127,6 +1127,33 @@ canvas.paint { background: #fff; border: 4px solid var(--ink); border-radius: 16
 .lampe-btn .ampoule { fill: #f1ead8; transition: fill .2s; }
 .lampe-btn.allumee { background: #fff3a8; box-shadow: 0 0 0 4px #ffe27a, 0 0 22px 6px rgba(255, 226, 122, .9); }
 .lampe-btn.allumee .ampoule { fill: #ffe27a; }
+/* la lampe jamais allumée : plus grande, elle brille doucement, avec son nom */
+.lampe-btn.invite { width: 74px; height: 74px; right: 80px !important; top: 12px !important; background: #fff3a8; animation: lampe-invite 1.6s ease-in-out infinite; }
+.lampe-btn.invite .ampoule { fill: #ffe27a; }
+@keyframes lampe-invite { 0%, 100% { box-shadow: 0 0 0 5px #ffe27a, 0 0 18px 4px rgba(255, 226, 122, .6); } 50% { box-shadow: 0 0 0 5px #ffe27a, 0 0 0 13px rgba(255, 226, 122, .45), 0 0 30px 10px rgba(255, 226, 122, .85); } }
+.lampe-etiquette { right: 76px; top: 92px; z-index: 31; font: 700 16px var(--body-font); background: var(--paper); border: 2px solid var(--ink); border-radius: 10px; padding: 1px 8px; pointer-events: none; }
+/* les écrous gagnés par une leçon (écran de résultat) */
+.res-gain { display: inline-flex; align-items: center; gap: 10px; margin-top: 10px; font: 800 26px var(--body-font); background: var(--yellow); border: 3px solid var(--ink); border-radius: 16px; padding: 4px 16px; }
+.res-gain b { white-space: nowrap; }
+.res-gain small { font-size: 17px; font-weight: 700; }
+/* avec la ligne des écrous, le résultat remonte un peu : la bulle de Boulon ne cache pas les boutons */
+.result:has(.res-gain) { top: 64px; }
+.result:has(.res-gain) .big-stars.seules { font-size: 80px; margin: 6px 0 2px; }
+/* la fenêtre du bonus de la visite */
+.av-bonus { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; min-width: 360px; }
+.av-bonus-titre { font-size: 28px; }
+.av-bonus-n { font: 800 56px var(--body-font); background: var(--yellow); border: 4px solid var(--ink); border-radius: 22px; padding: 4px 26px; animation: pop .5s; }
+.av-bonus p { margin: 0; font-size: 22px; }
+/* la remise de médaille */
+.av-ceremonie { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; min-width: 520px; }
+.av-ceremonie-titre { font-size: 26px; }
+.av-ceremonie-medaille { width: 170px; height: 170px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff6c8, #f6c445 60%, #d99a1e); border: 5px solid var(--ink);
+  display: flex; align-items: center; justify-content: center; font-size: 84px; box-shadow: 0 0 0 10px rgba(246, 196, 69, .35), 0 0 40px 14px rgba(255, 220, 120, .7); animation: pop .5s; }
+.av-ceremonie-medaille img, .av-ceremonie-medaille svg { width: 96px; height: 96px; }
+.av-ceremonie h2 { margin: 4px 0 0; font-size: 38px; }
+.av-ceremonie p { margin: 0; font-size: 22px; }
+.av-ceremonie-plus { font: 800 24px var(--body-font); background: var(--yellow); border: 3px solid var(--ink); border-radius: 14px; padding: 2px 14px; }
+.av-ceremonie .av-ceremonie-aide { font-size: 17px; color: #5a4a6b; }
 
 /* les périodes (chapitres rangés par période, au CP) */
 .periodes { display: flex; gap: 8px; margin-bottom: 10px; }

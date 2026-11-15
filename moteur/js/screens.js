@@ -262,6 +262,7 @@ App.register("atelier", (root, params) => {
   const bloque = Parents.bloque(u);   // la nuit, un jour fermé, ou la séance finie (réglages du parent)
   if (bloque) { App.go(bloque); return; }
   Aventure.demarrer(u); Aventure.journee(u);
+  const bonusVisite = Aventure.prendreBonusVisite();   // à dire en arrivant (CP)
   if (typeof Jardin !== "undefined") Jardin.maj(u);   // la plante pousse aux jours de visite
   Aventure.conclure(u);   // bonus du jour, médailles
   /* atelier en plusieurs pièces (Pieces, art.js) : on arrive dans la pièce de départ, puis on reste
@@ -317,6 +318,8 @@ App.register("atelier", (root, params) => {
     App.stage.classList.toggle("help-mode", oui);
     if (NIVEAU.lampeBouton) App.lampeGardee = oui;
     if (lampeBtn) { lampeBtn.classList.toggle("allumee", oui); lampeBtn.setAttribute("aria-pressed", String(oui)); lampeBtn.title = oui ? "Éteindre la lampe" : "Allumer la lampe : Boulon explique les objets"; }
+    /* la première fois que l'enfant l'allume, elle n'a plus besoin de se faire remarquer */
+    if (oui && parler && !u.lampeVue) { u.lampeVue = true; Store.save(); if (lampeBtn) lampeBtn.classList.remove("invite"); root.querySelectorAll(".lampe-etiquette").forEach((x) => x.remove()); }
     if (parler) {
       Sound.pop();
       m.say(oui ? "La lampe est allumée ! Passe ta souris sur les objets : je t'explique à quoi ils servent. Reclique sur la lampe pour l'éteindre." : "J'ai éteint la lampe. Clique sur un objet pour l'utiliser !");
@@ -328,6 +331,9 @@ App.register("atelier", (root, params) => {
       onclick: () => allumerLampe(!App.helpMode, true) });
     lampeBtn.addEventListener("mouseenter", () => Sound.hover());
     root.appendChild(lampeBtn);
+    /* tant que l'enfant ne l'a jamais allumée, elle brille, plus grande, avec son nom (test avec un enfant :
+       il ne l'avait pas trouvée) */
+    if (!u.lampeVue) { lampeBtn.classList.add("invite"); root.appendChild(h("div", { class: "lampe-etiquette abs" }, "La lampe")); }
     /* on change de pièce : la lampe reste comme elle était ; on revient d'un autre écran : elle est éteinte */
     if (params.piece && App.lampeGardee) allumerLampe(true, false); else App.lampeGardee = false;
   }
@@ -385,5 +391,10 @@ App.register("atelier", (root, params) => {
     hello = rev.total ? `Re-bonjour ${u.name} ! Tu as des leçons à réviser aujourd'hui : clique sur le bouton <b>🔁 À réviser</b>, c'est le meilleur moyen de ne pas oublier !`
       : last ? `Re-bonjour ${u.name} ! La dernière fois, tu as travaillé « ${last.title} ». On continue avec le cahier ?` : `Re-bonjour ${u.name} ! Que veux-tu faire aujourd'hui ?`;
   } else hello = pick(["Que veux-tu faire maintenant ?", "Clique sur un objet de l'atelier !", "Besoin d'aide ? Allume la lampe."]);
-  setTimeout(() => m.say(hello), 300);
+  /* la lampe pas encore trouvée : Boulon la montre (sauf à la toute première visite et quand il faut réviser) */
+  if (NIVEAU.lampeBouton && !u.lampeVue && !params.first && !rev.total)
+    hello = (params.welcome ? `Re-bonjour ${u.name} ! ` : "") + "Tu vois l'ampoule, en haut ? Allume-la : je t'explique tout ce qu'il y a dans l'atelier !";
+  /* le bonus de la visite : une fenêtre d'abord ; Boulon dit bonjour quand l'enfant la ferme */
+  const bonjour = () => setTimeout(() => { if (App.current === "atelier") m.say(hello); }, 300);
+  if (bonusVisite) setTimeout(() => Aventure.fenetreBonusVisite(u, bonusVisite, bonjour), 250); else bonjour();
 });

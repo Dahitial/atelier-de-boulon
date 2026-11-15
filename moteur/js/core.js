@@ -187,6 +187,7 @@ const Backup = {
       bestMemoImages: Number(u.bestMemoImages) || 0, bestNombres: Number(u.bestNombres) || 0,
       geo: u.geo && typeof u.geo === "object" ? { missions: obj(u.geo.missions), vus: obj(u.geo.vus) } : undefined,
       revisions: Number(u.revisions) || 0,
+      lampeVue: !!u.lampeVue,
       aventure: typeof Aventure !== "undefined" ? Aventure.nettoyer(u.aventure) : undefined,
       objets: typeof Objets !== "undefined" ? Objets.nettoyer(u.objets) : undefined,
       jardin: typeof Jardin !== "undefined" ? Jardin.nettoyer(u.jardin) : undefined,
