@@ -288,9 +288,11 @@ const Voice = {
   isMale(v) { return /Henri|Remy|Rémy|Paul|Antoine|Jean|Thierry|Gerard|Fabrice|Claude/i.test(v.name); },
   init() {
     // les sons et les lettres sont courts : on les charge d'avance, sinon le premier arrive avec du retard
-    // et on rejoue ces mêmes lecteurs : un nouveau lecteur recharge le fichier, d'où un blanc avant la lettre
-    if (typeof NIVEAU !== "undefined" && (NIVEAU.sons || NIVEAU.lettres || NIVEAU.mots))
-      this._prets = new Map([NIVEAU.sons, NIVEAU.lettres, NIVEAU.mots].flatMap((o) => Object.values(o || {})).map((f) => { const a = new Audio(); a.preload = "auto"; a.src = f; return [f, a]; }));
+    // et on rejoue ces mêmes lecteurs : un nouveau lecteur recharge le fichier, d'où un blanc avant la lettre.
+    // Pas les mots (plus de 100) : Chrome sur Android refuse au-delà d'environ 75 lecteurs ; un mot dit tout
+    // seul n'a pas de phrase avant lui, il est lu à la demande (le navigateur le garde ensuite en cache).
+    if (typeof NIVEAU !== "undefined" && (NIVEAU.sons || NIVEAU.lettres))
+      this._prets = new Map([...new Set([NIVEAU.sons, NIVEAU.lettres].flatMap((o) => Object.values(o || {})))].map((f) => { const a = new Audio(); a.preload = "auto"; a.src = f; return [f, a]; }));
     if (!("speechSynthesis" in window)) return;
     this.refresh();
     speechSynthesis.addEventListener?.("voiceschanged", () => this.refresh());

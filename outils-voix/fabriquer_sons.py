@@ -4,8 +4,10 @@ La voix de synthèse dit mal une lettre ou un son tout seul (« mmm » devient �
 « hé »). Le jeu joue donc de vrais enregistrements :
 - niveaux/cp/audio/lettres/<x>.ogg : le NOM des 26 lettres (« pé », « èl »…), voix de Sartus85 ;
 - niveaux/cp/audio/sons/<son>.ogg  : le SON (« a », « ou », « mmm », « pe »…) ;
-- niveaux/cp/audio/mots/<mot>.ogg  : un nombre dit tout seul, de zéro à vingt, et « une » (la voix dit
-                                     « un » comme « hein »), Sartus85.
+- niveaux/cp/audio/mots/<mot>.ogg  : un mot dit tout seul, Sartus85 : les nombres de zéro à vingt et « une »
+                                     (la voix dit « un » comme « hein »), et les mots des images et des
+                                     exercices (la voix dit « livre » comme « live ») ; nom de fichier sans
+                                     accent (bébé → bebe.ogg, œuf → oeuf.ogg).
 
 D'où viennent les sons (sons-sources/, détail dans sons-sources/CREDITS.txt) :
 - voix/<son>.wav : un son enregistré avec l'enregistreur (enregistrer_sons.html) : il passe avant tout ;
@@ -18,6 +20,7 @@ nom des lettres (saccadé), les faire dire par Chatterbox (il invente : on dirai
 Usage : .venv-chatterbox\\Scripts\\python.exe fabriquer_sons.py
 """
 import os
+import unicodedata
 import numpy as np
 import soundfile as sf
 from scipy.signal import resample_poly, butter, sosfiltfilt, bilinear, lfilter, stft, istft
@@ -42,6 +45,19 @@ LETTRES_MOT = {"l": "elle"}
 NOMBRES = ["zéro", "un", "deux", "trois", "quatre", "cinq", "six", "sept", "huit", "neuf", "dix", "onze", "douze",
            "treize", "quatorze", "quinze", "seize", "dix-sept", "dix-huit", "dix-neuf", "vingt", "une"]
 MOTS = {m.replace("é", "e"): "nombres/" + m for m in NOMBRES}   # fichier du jeu sans accent : zero.ogg
+
+
+def sans_accent(m):
+    """nom de fichier du jeu : bébé → bebe, œuf → oeuf (le même calcul que motsSeuls dans niveaux/cp/niveau.js)"""
+    m = m.lower().replace("œ", "oe").replace("æ", "ae").replace("'", "").replace("’", "").replace(" ", "-")
+    return "".join(c for c in unicodedata.normalize("NFD", m) if unicodedata.category(c) != "Mn")
+
+
+# les mots dits tout seuls (images, « Lis le mot », dictées) : Sartus85, sons-sources/mots/<mot>.wav, validés à
+# l'écoute (14/11/2026). « est » n'y est pas (Sartus85 dit le point cardinal), « elle » joue la lettre L.
+DOSSIER_MOTS = os.path.join(SRC, "mots")
+if os.path.isdir(DOSSIER_MOTS):
+    MOTS.update({sans_accent(f[:-4]): "mots/" + f[:-4] for f in sorted(os.listdir(DOSSIER_MOTS)) if f.endswith(".wav")})
 VOLUME_PERCU = -27.0
 VOLUME_CALCULE = {"s": -23.0}  # le « sss » fabriqué par calcul garde son réglage validé à l'écoute
 DUREE_MAX = 1.5               # un son enregistré trop long est raccourci (avec un fondu)
@@ -214,7 +230,7 @@ def fabriquer():
     sons, lettres, mots = os.path.join(CP, "sons"), os.path.join(CP, "lettres"), os.path.join(CP, "mots")
     faits = {}
     os.makedirs(mots, exist_ok=True)
-    for nom, src in MOTS.items():                               # les nombres dits tout seuls (Sartus85)
+    for nom, src in MOTS.items():                               # les nombres et les mots dits tout seuls (Sartus85)
         faits["mot " + nom] = ecrire_ogg(mots, nom, normaliser(rogner(lire(os.path.join(SRC, src + ".wav")))))
     for x in "abcdefghijklmnopqrstuvwxyz":                      # le nom des lettres (Sartus85)
         src = os.path.join(SRC, LETTRES_MOT[x] + ".wav") if x in LETTRES_MOT else os.path.join(SRC, "lettres", x + ".wav")

@@ -12,10 +12,14 @@ Lettres et sons du CP — d'où viennent les fichiers de ce dossier.
      elle.wav        ← File:LL-Q150 (fra)-Sartus85-elle.wav  (le mot « elle » se dit [èl], téléchargé le 13/11/2026)
      nombres/<n>.wav ← File:LL-Q150 (fra)-Sartus85-<n>.wav   (zéro, un, deux… vingt, et une ;
                                                               téléchargés le 14/11/2026)
+     mots/<mot>.wav  ← File:LL-Q150 (fra)-Sartus85-<mot>.wav (94 mots : agneau, arbre, livre, œuf… ;
+                                                              téléchargés le 14/11/2026, validés à l'écoute)
    Dans le jeu : le nom des 26 lettres (celui du L est pris dans « elle » : dans « l (lettre) », le « è »
    est si court qu'on entend surtout « lll »), les voyelles a, i, o, u, é, è (et e, ou, on, an s'ils
    n'ont pas été enregistrés dans voix/), et les nombres de zéro à vingt dits tout seuls (la voix de
-   synthèse dit « un » comme « hein » ; tous les nombres viennent de Sartus85 pour rester homogènes).
+   synthèse dit « un » comme « hein » ; tous les nombres viennent de Sartus85 pour rester homogènes),
+   et les mots des images et des exercices dits tout seuls (la voix de synthèse dit « livre » comme
+   « live »). « est » n'en fait pas partie : Sartus85 dit le point cardinal, la voix garde le verbe.
 
 2. voix/<son>.wav : sons enregistrés pour le jeu par son auteur, avec l'enregistreur
    (enregistrer_sons.html) : consonnes m, n, l, r, s, f, ch, v, j, p, b, t, d et voyelles ou, on, an, e.

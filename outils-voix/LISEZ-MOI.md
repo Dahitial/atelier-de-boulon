@@ -59,9 +59,12 @@ Restent à la voix : « a » quand c'est le verbe (« Zigzag a gagné », « il 
 lettre après un nombre (« 8 h »).
 
 D'où viennent les fichiers (`fabriquer_sons.py` les refait tous) :
-- le nom des 26 lettres, les voyelles a, i, o, u, é, è, et les nombres de zéro à vingt dits tout seuls
-  (la voix de synthèse dit « un » comme « hein ») : Sartus85 (Lingua Libre, CC BY-SA 4.0), dans
-  `sons-sources/` ;
+- le nom des 26 lettres, les voyelles a, i, o, u, é, è, les nombres de zéro à vingt dits tout seuls
+  (la voix de synthèse dit « un » comme « hein ») et 94 mots dits tout seuls (`sons-sources/mots/` : la
+  voix dit « livre » comme « live ») : Sartus85 (Lingua Libre, CC BY-SA 4.0), dans `sons-sources/`.
+  Les mots sont choisis à l'écoute ; « est » n'y est pas (Sartus85 dit le point cardinal). Pour en
+  ajouter un : son .wav dans `sons-sources/mots/`, son nom dans la liste de `NIVEAU.mots`
+  (`niveaux/cp/niveau.js`), puis `fabriquer_sons.py` ;
 - les consonnes (m, n, l, r, s, f, ch, v, j, p, b, t, d) et ou, on, an, e : enregistrés par l'auteur
   du jeu avec l'enregistreur, dans `sons-sources/voix/` (ils passent avant tout le reste).
 

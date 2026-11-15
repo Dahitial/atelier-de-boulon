@@ -34,7 +34,21 @@ const NIVEAU = {
     .flatMap((m, n) => { const f = `audio/mots/${m.replace("é", "e")}.ogg`; return [[m, f], [String(n), f]]; })
     .concat([["une", "audio/mots/une.ogg"],
       /* les syllabes « bé » et « pé » : aucun mot ne passait ; le nom des lettres B et P se dit pareil */
-      ["bé", "audio/lettres/b.ogg"], ["pé", "audio/lettres/p.ogg"]])),
+      ["bé", "audio/lettres/b.ogg"], ["pé", "audio/lettres/p.ogg"],
+      /* « elle » : le même enregistrement que le nom de la lettre L */
+      ["elle", "audio/lettres/l.ogg"]])
+    /* les mots des images et des exercices dits tout seuls (la voix dit « livre » comme « live ») : Sartus85,
+       validés à l'écoute. Fichier sans accent (bébé → bebe.ogg), comme sans_accent() dans fabriquer_sons.py.
+       Pas « est » : Sartus85 dit le point cardinal. */
+    .concat(["agneau", "ananas", "arbre", "arrosoir", "avec", "avion", "ballon", "banane", "bateau", "bol", "bonbon", "bébé",
+      "canard", "carotte", "carré", "chapeau", "chat", "chemise", "cheval", "chien", "clou", "clé", "cochon", "crayon",
+      "cuillère", "dans", "dent", "domino", "dé", "désert", "et", "feu", "fleur", "fusée", "girafe", "graine", "gâteau",
+      "hibou", "il", "jupe", "la", "lapin", "le", "les", "lion", "lit", "livre", "loup", "lune", "matin", "melon", "mer",
+      "midi", "montagne", "moto", "mouche", "mouton", "mur", "nid", "nuit", "orange", "palmier", "plume", "poisson",
+      "pomme", "poule", "pousse", "poussin", "printemps", "radis", "renard", "robot", "rond", "rose", "salade", "savon",
+      "soir", "soleil", "souris", "sous", "sur", "table", "tambour", "tapis", "tasse", "tomate", "tortue", "triangle",
+      "vache", "veau", "voiture", "vélo", "étoile", "œuf"]
+      .map((m) => [m, `audio/mots/${m.replace(/œ/g, "oe").normalize("NFD").replace(/\p{M}/gu, "")}.ogg`]))),
   /* ce que la voix lit de travers (« pa » devient « P A », « vi » le chiffre romain « six ») : elle dit à la place
      un mot qui se prononce pareil (l'écran ne change pas). Choisis à l'écoute avec outils-voix/ecouter_syllabes.html.
      prononcer : partout ; prononcerSeul : seulement la syllabe dite toute seule (« me », « ne », « te » sont aussi
