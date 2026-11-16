@@ -161,3 +161,30 @@ p, ul, ol { margin: 0; }
 .pied { background: var(--ink); color: var(--paper); }
 .pied .contenu { padding-top: 32px; padding-bottom: 32px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px 32px; font-size: 16px; }
 .pied nav { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+
+/* ---------- Guide des parents (parents.html) ---------- */
+.menu a[aria-current="page"] { color: var(--yellow); }
+.guide-accueil .contenu { padding-top: 52px; padding-bottom: 48px; }
+.jeu-icone { font-size: 26px; line-height: 1; }
+.conseils { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 14px; max-width: 46em; margin: 0 auto; }
+.conseils li { background: #fff; border: 3px solid var(--ink); border-left: 12px solid var(--yellow); border-radius: 16px; padding: 14px 20px; }
+.conseils b { font-family: var(--titre); font-weight: 600; font-size: 19px; }
+.bande-parents { background: var(--wall); color: var(--paper); border-top: 18px solid var(--wood); border-bottom: 18px solid var(--wood); margin-top: 72px; }
+.bande-parents > .section { padding-bottom: 72px; padding-top: 56px; }
+.bande-parents .section-titre p:not(.surtitre) { color: #e8f4f1; }
+.guide-ligne { display: flex; flex-wrap: wrap; align-items: center; gap: 24px 40px; }
+.guide-ligne.inverse { flex-direction: row-reverse; }
+.guide-ligne img {
+  flex: 3 1 420px; min-width: 0; width: 100%; height: auto; display: block;
+  border: 3px solid var(--ink); border-radius: 18px; box-shadow: var(--shadow);
+}
+.guide-ligne > div { flex: 2 1 300px; display: flex; flex-direction: column; gap: 12px; }
+.guide-ligne h3 { font-weight: 700; font-size: 28px; color: var(--yellow); }
+.guide-ligne ul { padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
+.bande-parents .jeu { color: var(--ink); }
+.questions { max-width: 860px; padding-bottom: 72px; gap: 14px; }
+.questions h2 { margin-bottom: 14px; }
+.questions details { background: #fff; border: 3px solid var(--ink); border-radius: 16px; padding: 14px 20px; }
+.questions summary { cursor: pointer; font-family: var(--titre); font-weight: 600; font-size: 20px; }
+.questions details p { margin-top: 10px; }
+.questions-avis { text-align: center; margin-top: 10px; }

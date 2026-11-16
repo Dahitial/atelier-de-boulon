@@ -1,5 +1,5 @@
 /* Pose un nouveau numéro de version (« ?v=AAAAMMJJ-HHMM ») sur les fichiers .js et .css chargés par
-   les pages d'entrée : niveaux/<id>/index.html et la page du site (index.html, s'il existe).
+   les pages d'entrée : niveaux/<id>/index.html et les pages du site (index.html et parents.html, s'ils existent).
    moteur/charger.js recopie ce numéro sur tous les fichiers du jeu.
 
    Pourquoi : GitHub Pages dit au navigateur de garder chaque fichier 10 minutes. Sans numéro, juste
@@ -18,7 +18,7 @@ const numero = `${d.getFullYear()}${deux(d.getMonth() + 1)}${deux(d.getDate())}-
 
 const pages = fs.readdirSync(path.join(racine, "niveaux"))
   .map((n) => path.join(racine, "niveaux", n, "index.html"))
-  .concat(path.join(racine, "index.html"))
+  .concat(path.join(racine, "index.html"), path.join(racine, "parents.html"))
   .filter((p) => fs.existsSync(p));
 
 /* seulement les adresses locales (pas http://, //, data:) vers un .js ou un .css */
