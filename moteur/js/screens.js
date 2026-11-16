@@ -306,6 +306,7 @@ App.register("atelier", (root, params) => {
     h("button", { class: "av-tag", title: "Le coffre aux trésors : rang, médailles et boutique", onclick: () => { Sound.click(); App.go("aventure"); } },
       Aventure.rang(Aventure.etat(u).total).icone + " 🔩 " + Aventure.etat(u).ecrous)));
   const rev = Revision.aFaire(u);
+  if (typeof DefisParents !== "undefined") DefisParents.boutonAtelier(root, u);   // l'enveloppe du défi des parents
   if (rev.total) root.appendChild(h("button", { class: "btn violet abs rev-btn", style: { left: "14px", top: "78px" }, title: "Revoir les leçons au bon moment",
     onclick: () => { Sound.click(); App.go("revision"); } }, "🔁 À réviser", h("span", { class: "badge" }, String(rev.total))));
   root.appendChild(h("button", { class: "icon-btn", style: { right: "18px", top: "18px" }, title: "Réglages", "aria-label": "Réglages", onclick: openSettings }, "⚙"));
@@ -394,6 +395,8 @@ App.register("atelier", (root, params) => {
   /* la lampe pas encore trouvée : Boulon la montre (sauf à la toute première visite et quand il faut réviser) */
   if (NIVEAU.lampeBouton && !u.lampeVue && !params.first && !rev.total)
     hello = (params.welcome ? `Re-bonjour ${u.name} ! ` : "") + "Tu vois l'ampoule, en haut ? Allume-la : je t'explique tout ce qu'il y a dans l'atelier !";
+  /* une enveloppe pas encore ouverte : Boulon annonce le défi des parents (sans dire la récompense) */
+  if (typeof DefisParents !== "undefined" && !(piece && params.piece && piece.entree)) hello = DefisParents.bonjour(u, hello);
   /* le bonus de la visite : une fenêtre d'abord ; Boulon dit bonjour quand l'enfant la ferme */
   const bonjour = () => setTimeout(() => { if (App.current === "atelier") m.say(hello); }, 300);
   if (bonusVisite) setTimeout(() => Aventure.fenetreBonusVisite(u, bonusVisite, bonjour), 250); else bonjour();

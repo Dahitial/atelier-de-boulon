@@ -125,7 +125,7 @@ les transports, l'écriture, la communication, le calcul et les ordinateurs.
 ## L'atelier de Rivet : informatique et robotique
 
 Acheter Rivet, le chat robot, au coffre (150 écrous) ouvre son atelier : on clique sur Rivet,
-dans l'atelier. Le parent peut aussi l'offrir depuis l'espace parents (« 🐱 Offrir Rivet »).
+dans l'atelier. Rivet se mérite : le parent ne peut pas l'offrir.
 Cinq missions, qui s'ouvrent l'une après l'autre (module `../../modules/robotique/`) :
 
 | Mission | Ce que fait l'enfant |
@@ -194,6 +194,25 @@ aujourd'hui ? », ou depuis ⚙ Réglages.
 
 Le temps n'est compté que lorsque la fenêtre du jeu est affichée. Le détail par jour
 est enregistré à partir de cette version : les jours précédents apparaissent vides.
+
+## Les défis des parents
+
+Dans l'espace parents, le bouton **✉️ Défis** (`moteur/js/defis-parents.js`) :
+- **Le parent crée un défi** pour un enfant, ou pour tous (chacun reçoit son enveloppe et avance
+  à son rythme) : **finir des leçons** (jusqu'à 5, choisies par matière) ou **venir plusieurs
+  jours** (2, 3, 4, 5 ou 7). Il **écrit lui-même la récompense** (une glace, une sortie…).
+- **Un défi en cours à la fois** par enfant. Pas de date limite ; le parent peut le retirer.
+- **L'enfant voit une enveloppe** en haut de l'atelier, à droite de son prénom, dans toutes les
+  pièces. Tant qu'il ne l'a pas ouverte, Boulon l'annonce en arrivant : *« Tes parents ont un défi :
+  si tu le réussis, ils vont t'offrir quelque chose. Ouvre l'enveloppe pour le savoir ! »*
+  **Boulon ne lit jamais la récompense** : elle est écrite dans l'enveloppe, toujours visible.
+- **Une leçon compte quand elle est finie**, même avec une note faible : c'est l'effort qui est
+  récompensé. Un jour compte quand l'enfant y finit au moins une leçon ou une révision.
+- **Défi réussi** : une fenêtre de fête (après les médailles, quand Boulon a fini de parler) et un
+  **bon** rangé dans le coffre aux trésors, onglet « 🎁 Mes bons ». Le parent touche
+  **« Promesse tenue »** ; le bouton Défis montre le nombre de promesses à tenir.
+- Le jeu n'offre jamais rien lui-même : **Rivet se mérite**, il n'y a plus de bouton pour l'offrir.
+- Les défis sont gardés dans la sauvegarde des élèves.
 
 ## L'aventure : écrous, rangs, médailles et boutique
 

@@ -116,6 +116,7 @@ const Store = {
     u.lastLesson = lessonId;
     this.save();
     if (typeof Journal !== "undefined") Journal.noter(u, "lecon", lessonId, note);
+    if (typeof DefisParents !== "undefined") DefisParents.apresLecon(u, lessonId);   // le défi des parents (leçon finie, quelle que soit la note)
     if (typeof Aventure !== "undefined") Aventure.apresLecon(lessonId, avant, note);   // écrous et médailles
   },
 };
@@ -197,6 +198,7 @@ const Backup = {
       robotique: typeof Robotique !== "undefined" ? Robotique.nettoyer(u.robotique) : undefined,
       journal: typeof Journal !== "undefined" ? Journal.nettoyer(u.journal) : undefined,
       reglages: typeof Parents !== "undefined" ? Parents.nettoyerReglages(u.reglages) : undefined,
+      defisParents: typeof DefisParents !== "undefined" ? DefisParents.nettoyer(u.defisParents) : undefined,
       sciences: u.sciences && typeof u.sciences === "object" && u.sciences.vus && typeof u.sciences.vus === "object"
         ? { vus: Object.fromEntries(Object.entries(u.sciences.vus).filter(([k]) => /^[a-z]{2,12}$/.test(k)).map(([k, v]) => [k, String(v).slice(0, 10)])) } : undefined,
       histoire: u.histoire && typeof u.histoire === "object" ? {

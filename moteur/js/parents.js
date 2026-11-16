@@ -424,6 +424,12 @@ App.register("parents", (root, params) => {
     h("span", { class: "ava" }, u.avatar), h("span", null, u.name,
       Parents.propres(u) ? h("span", { class: "pa-propre", title: "réglages propres à cet enfant" }, " ⚙") : null))));
   if (!users.length) gauche.appendChild(h("p", { style: { fontSize: "16px" } }, "Aucun élève pour l'instant."));
+  /* les défis des parents (defis-parents.js) : le nombre de promesses à tenir */
+  if (typeof DefisParents !== "undefined") {
+    const aTenir = users.reduce((n, u) => n + DefisParents.aTenir(u).length, 0);
+    gauche.appendChild(h("button", { class: "pa-enfant defis" + (vue === "defis" ? " on" : ""), onclick: () => App.go("parents", { vue: "defis" }) },
+      h("span", { class: "ava" }, "✉️"), h("span", null, "Défis", aTenir ? h("b", { class: "pa-badge", title: "promesses à tenir" }, String(aTenir)) : null)));
+  }
   gauche.appendChild(h("button", { class: "pa-enfant reg" + (vue === "reglages" ? " on" : ""), onclick: () => App.go("parents", { id: choisi && choisi.id, vue: "reglages" }) },
     h("span", { class: "ava" }, "⚙"), h("span", null, "Réglages")));
   root.appendChild(gauche);
@@ -431,7 +437,9 @@ App.register("parents", (root, params) => {
   const droite = h("div", { class: "panel abs pa-droite" });
   root.appendChild(droite);
 
-  if (vue === "reglages") {
+  if (vue === "defis" && typeof DefisParents !== "undefined") {
+    DefisParents.ecranParents(droite, params);
+  } else if (vue === "reglages") {
     /* pour qui : tous les enfants, ou un enfant (ses propres réglages, ou ceux de tous) */
     const pour = users.find((u) => u.id === params.pour) || null;
     const g = Parents.reglages(), propre = !!pour && Parents.propres(pour);

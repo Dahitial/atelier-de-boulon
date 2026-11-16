@@ -113,8 +113,7 @@ Le jeu de memory existe déjà dans la borne de jeux (moteur commun) : il n'a pa
   « Petit inventeur » arrive avec les inventions.
 
 **L'atelier de Rivet : informatique et robotique** (nouvelle version, étape 7)
-- Rivet, acheté au coffre (150 écrous) ou offert par le parent (espace parents, « 🐱 Offrir
-  Rivet »), s'installe dans la salle de jeux avec l'étiquette « Rivet ». Un clic ouvre son atelier.
+- Rivet, acheté au coffre (150 écrous) — il se mérite, le parent ne l'offre pas —, s'installe dans la salle de jeux avec l'étiquette « Rivet ». Un clic ouvre son atelier.
 - Cinq missions, en flèches et en voix, qui s'ouvrent l'une après l'autre :
   1. **Les flèches** : chaque flèche fait avancer Rivet tout de suite ;
   2. **Le programme** : on prépare les flèches, puis « Go ! » ; une flèche qui fait heurter un
@@ -210,3 +209,22 @@ Le jeu de memory existe déjà dans la borne de jeux (moteur commun) : il n'a pa
 | `js/contenu-cp.js` | Matières et leçons |
 | `js/atelier-cp.js` | Les trois pièces de l'atelier : décors, objets, place des décors de la boutique |
 | `css/cp.css` | Style du CP (polices, tailles, couleurs des matières) |
+
+## Les défis des parents
+
+Dans l'espace parents, le bouton **✉️ Défis** (`moteur/js/defis-parents.js`) :
+- **Le parent crée un défi** pour un enfant, ou pour tous (chacun reçoit son enveloppe et avance
+  à son rythme) : **finir des leçons** (jusqu'à 5, choisies par matière) ou **venir plusieurs
+  jours** (2, 3, 4, 5 ou 7). Il **écrit lui-même la récompense** (une glace, une sortie…).
+- **Un défi en cours à la fois** par enfant. Pas de date limite ; le parent peut le retirer.
+- **L'enfant voit une enveloppe** en haut de l'atelier, à droite de son prénom, dans toutes les
+  pièces. Tant qu'il ne l'a pas ouverte, Boulon l'annonce en arrivant : *« Tes parents ont un défi :
+  si tu le réussis, ils vont t'offrir quelque chose. Ouvre l'enveloppe pour le savoir ! »*
+  **Boulon ne lit jamais la récompense** : elle est écrite dans l'enveloppe, toujours visible.
+- **Une leçon compte quand elle est finie**, même avec une note faible : c'est l'effort qui est
+  récompensé. Un jour compte quand l'enfant y finit au moins une leçon ou une révision.
+- **Défi réussi** : une fenêtre de fête (après les médailles, quand Boulon a fini de parler) et un
+  **bon** rangé dans le coffre aux trésors, onglet « 🎁 Mes bons ». Le parent touche
+  **« Promesse tenue »** ; le bouton Défis montre le nombre de promesses à tenir.
+- Le jeu n'offre jamais rien lui-même : **Rivet se mérite**, il n'y a plus de bouton pour l'offrir.
+- Les défis sont gardés dans la sauvegarde des élèves.

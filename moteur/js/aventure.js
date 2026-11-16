@@ -267,8 +267,10 @@ const Aventure = {
   /* à appeler après chaque événement : médailles, sauvegarde, affichage */
   conclure(u) {
     this.verifier(u);
+    if (typeof DefisParents !== "undefined") DefisParents.verifier(u);   // le défi des parents est-il réussi ?
     Store.save();
     this.afficher();
+    if (typeof DefisParents !== "undefined") DefisParents.feter(u);      // la fête et le bon, quand plus rien ne parle
   },
   evenement() {
     const u = Store.user; if (!u) return;
@@ -508,16 +510,28 @@ App.register("aventure", (root, params) => {
   /* panneau de droite : boutique ou médailles */
   const droite = h("div", { class: "panel abs av-droite" });
   const nbMed = Object.keys(a.medailles).length;
+  const bons = typeof DefisParents !== "undefined" ? DefisParents.bons(u) : [];
   droite.appendChild(h("div", { class: "tabs av-tabs" },
     h("div", { class: "tab math" + (onglet === "boutique" ? " on" : ""), role: "button", tabindex: "0", onclick: () => { Sound.click(); recharger(); } }, "🛍️ La boutique"),
-    h("div", { class: "tab fr" + (onglet === "medailles" ? " on" : ""), role: "button", tabindex: "0", onclick: () => { Sound.click(); App.go("aventure", { onglet: "medailles" }); } }, `🏅 Médailles ${nbMed}/${AVENTURE_MEDAILLES.length}`)));
+    h("div", { class: "tab fr" + (onglet === "medailles" ? " on" : ""), role: "button", tabindex: "0", onclick: () => { Sound.click(); App.go("aventure", { onglet: "medailles" }); } }, `🏅 Médailles ${nbMed}/${AVENTURE_MEDAILLES.length}`),
+    /* les bons des défis réussis (défis des parents) */
+    bons.length ? h("div", { class: "tab sci" + (onglet === "bons" ? " on" : ""), role: "button", tabindex: "0", onclick: () => { Sound.click(); App.go("aventure", { onglet: "bons" }); } }, `🎁 Mes bons ${bons.length}`) : null));
   root.appendChild(droite);
   const contenu = h("div", { class: "av-contenu" });
   droite.appendChild(contenu);
   /* réaffiche l'écran après un achat, sans perdre la position dans la liste */
   const recharger = () => App.go("aventure", { onglet: "boutique", scroll: contenu.scrollTop });
 
-  if (onglet === "medailles") {
+  if (onglet === "bons" && bons.length) {
+    contenu.appendChild(h("p", { class: "dp-bons-aide" }, "Les bons des défis de tes parents. Montre-les à tes parents !"));
+    const grille = h("div", { class: "dp-bons" });
+    bons.forEach((d) => {
+      const carte = DefisParents.carteBon(d, true);
+      if (NIVEAU.toutEnVoix) carte.addEventListener("mouseenter", () => Voice.survol(d.tenu ? "Un bon de tes parents. Ils ont tenu leur promesse !" : "Un bon de tes parents. Montre-le-leur !"));
+      grille.appendChild(carte);
+    });
+    contenu.appendChild(grille);
+  } else if (onglet === "medailles") {
     const grille = h("div", { class: "av-grille med" });
     AVENTURE_MEDAILLES.forEach((m) => {
       const date = a.medailles[m.id];

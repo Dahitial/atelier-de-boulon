@@ -385,21 +385,12 @@ App.register("robo-fin", (root, params) => {
 });
 
 /* ------------------------------------------------------------------ */
-/* Rivet ouvre son atelier ; l'espace parents peut l'offrir ; la médaille */
+/* Rivet ouvre son atelier ; la médaille (Rivet se mérite : il s'achète avec les écrous, le parent ne l'offre pas) */
 /* ------------------------------------------------------------------ */
 if (typeof DECORS_ACTIFS !== "undefined" && DECORS_ACTIFS.chat) Object.assign(DECORS_ACTIFS.chat, {
   desc: NIVEAU.toutEnVoix ? "Rivet, le chat robot : apprends à lui donner des ordres pour trouver l'écrou." : "L'atelier de Rivet : programmer un robot.",
   effet: "Clique dessus : l'atelier de Rivet, pour apprendre à programmer un robot. Il se voit à la fenêtre.",
   agir() { Sound.click(); App.go("robotique"); },
-});
-if (typeof PARENTS_ACTIONS !== "undefined") PARENTS_ACTIONS.push((u) => {
-  if (Robotique.ouvert(u)) return null;
-  return h("button", { class: "btn small white", title: "Ouvre l'atelier de Rivet (informatique et robotique) sans l'acheter avec les écrous",
-    onclick: () => {
-      const a = Aventure.etat(u);
-      a.achats.chat = Revision.jour(0); a.places.chat = true; Store.save(); Sound.good();
-      App.go("parents", { id: u.id });
-    } }, "🐱 Offrir Rivet");
 });
 ajouterMedailles([
   { id: "programmeur", icone: "🤖", nom: "Programmeur", desc: "Réussis les 5 missions de l'atelier de Rivet.",

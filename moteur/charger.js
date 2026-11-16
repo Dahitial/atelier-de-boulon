@@ -32,7 +32,7 @@
   const scripts = [].concat(
     ["core", "art", "pictos"].map(moteur),
     NIVEAU.contenus.map((f) => dossierNiveau + f),
-    ["exercise", "exercices-images", "screens", "training", "illustrations", "revision", "aventure", "objets", "jardin", "parents", "tools", "games", "construction", "chevalet"].map(moteur),
+    ["exercise", "exercices-images", "screens", "training", "illustrations", "revision", "aventure", "objets", "jardin", "parents", "defis-parents", "tools", "games", "construction", "chevalet"].map(moteur),
     (NIVEAU.ecrans || []).map((f) => dossierNiveau + f),
     ...modules.map((m) => m.scripts.map((s) => dossierModule(m.id) + s)),
   );

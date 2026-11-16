@@ -31,7 +31,7 @@ installateur/     un seul script d'installation, qui fabrique un Setup par nivea
 
 ```
 core, art, pictos  →  NIVEAU.contenus  →  exercise, exercices-images, screens, training, illustrations,
-revision, aventure, objets, jardin, parents, tools, games, construction, chevalet  →  NIVEAU.ecrans  →  scripts des modules  →  App.start()
+revision, aventure, objets, jardin, parents, defis-parents, tools, games, construction, chevalet  →  NIVEAU.ecrans  →  scripts des modules  →  App.start()
 ```
 
 Tout marche en `file://` (jeu installé, sans serveur). Les progrès des élèves sont rangés
@@ -89,7 +89,7 @@ d'installation (`appGuid`) et dossier d'installation. Chaque niveau a son propre
 - **Des images** pour les plus jeunes : `Object.assign(PICTOS, { … })` et `PICTOS_NOMS` (le mot dit
   par la voix). Repère 100 × 100. Un module peut ajouter les siennes (ex. `modules/inventions`).
 - **Un bouton dans l'espace parents**, sur la fiche d'un enfant : `PARENTS_ACTIONS.push((u) => bouton ou null)`
-  (ex. « Offrir Rivet », `modules/robotique`).
+  (rien ne s'y offre : Rivet et les objets du jeu se méritent avec les écrous).
 - **Des périodes** : un chapitre peut avoir `periode: 1, 2…`. Dès qu'une matière a plusieurs
   périodes, le sommaire montre un onglet par période (il s'ouvre sur celle de la leçon à faire),
   et le défi de Zigzag aussi (le CP).

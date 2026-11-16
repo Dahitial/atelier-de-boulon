@@ -282,7 +282,12 @@ const CP_DICTEE = {
 /* ------------------------------------------------------------------ */
 /* Compter                                                              */
 /* ------------------------------------------------------------------ */
-const CP_A_COMPTER = [["pomme", "pommes"], ["orange", "oranges"], ["etoile", "étoiles"], ["ballon", "ballons"], ["poisson", "poissons"], ["voiture", "voitures"], ["carotte", "carottes"], ["banane", "bananes"]];
+/* [image, pluriel, féminin, se mange] */
+const CP_A_COMPTER = [["pomme", "pommes", 1, 1], ["orange", "oranges", 1, 1], ["etoile", "étoiles", 1, 0], ["ballon", "ballons", 0, 0], ["poisson", "poissons", 0, 0],
+  ["voiture", "voitures", 1, 0], ["carotte", "carottes", 1, 1], ["banane", "bananes", 1, 1]];
+/* « de pommes », mais « d'oranges » ; « un », mais « une » devant un nom féminin */
+const deNom = (pluriel) => (/^[aeiouyéèêh]/i.test(pluriel) ? "d'" : "de ") + pluriel;
+const nbNom = (n, fem) => (n === 1 && fem ? "une" : NOMS_NOMBRES[n]);
 const CP_COMPTER = {
   id: "math", name: "Compter", color: "#2e86de",
   chapters: [
@@ -292,7 +297,7 @@ const CP_COMPTER = {
           const [image, pluriel] = CP.un(CP_A_COMPTER), n = CP.entre(1, 10);
           const voisins = [n - 2, n - 1, n + 1, n + 2].filter((x) => x >= 1 && x <= 10);
           const choix = [n, ...CP.plusieurs(voisins, 3)].sort((a, b) => a - b);
-          return { type: "compter", consigne: `Combien y a-t-il de ${pluriel} ?`, image, n, choix };
+          return { type: "compter", consigne: `Combien y a-t-il ${deNom(pluriel)} ?`, image, n, choix };
         }),
           lesson: { rule: ["Pour compter, on touche chaque image <b>une seule fois</b>.", "Le dernier nombre dit, c'est le nombre d'images."], ex: "pomme, pomme, pomme → un, deux, <b>trois</b>" } },
         { id: "c1-2", title: "Le plus, le moins", bank: CP.serie(() => {
@@ -341,7 +346,7 @@ const CP_COMPTER = {
       id: "c3", title: "Ajouter", picto: "orange", color: "#2a6fb8", lessons: [
         { id: "c3-1", title: "Combien en tout ?", bank: CP.serie(() => {
           const [image, pluriel] = CP.un(CP_A_COMPTER), a = CP.entre(1, 5), b = CP.entre(1, Math.min(5, 10 - a)), choix = nombresAutour(a + b, 1, 10);
-          return { type: "img", consigne: `Combien de ${pluriel} en tout ?`,
+          return { type: "img", consigne: `Combien ${deNom(pluriel)} en tout ?`,
             prompt: `<div class="groupes"><span class="boite">${groupeSvg(image, a)}</span><span class="plus">+</span><span class="boite">${groupeSvg(image, b)}</span></div>`,
             choices: choix.map((k) => choixNombre(k)), answer: choix.indexOf(a + b) };
         }),
@@ -355,9 +360,9 @@ const CP_COMPTER = {
         }),
           lesson: { rule: ["Pour faire 5, on compte les cases vides.", "4 et 1 font 5 ; 3 et 2 font 5."], ex: "3 pommes → il en manque <b>2</b> pour faire 5" } },
         { id: "c3-3", title: "Petits problèmes", bank: CP.serie(() => {
-          const [image, pluriel] = CP.un(CP_A_COMPTER), qui = CP.un([["Yasmine", "elle"], ["Adam", "il"], ["Salma", "elle"], ["Youssef", "il"], ["Inès", "elle"], ["Rayan", "il"]]);
+          const [image, pluriel, fem] = CP.un(CP_A_COMPTER), qui = CP.un([["Yasmine", "elle"], ["Adam", "il"], ["Salma", "elle"], ["Youssef", "il"], ["Inès", "elle"], ["Rayan", "il"]]);
           const a = CP.entre(1, 6), b = CP.entre(1, Math.min(4, 10 - a)), choix = nombresAutour(a + b, 1, 10);
-          return { type: "img", consigne: `${qui[0]} a ${NOMS_NOMBRES[a]} ${a > 1 ? pluriel : motDe(image)}. Boulon lui en donne ${NOMS_NOMBRES[b]}. Combien en a-t-${qui[1]} maintenant ?`,
+          return { type: "img", consigne: `${qui[0]} a ${nbNom(a, fem)} ${a > 1 ? pluriel : motDe(image)}. Boulon lui en donne ${nbNom(b, fem)}. Combien en a-t-${qui[1]} maintenant ?`,
             prompt: `<div class="groupes"><span class="boite">${groupeSvg(image, a)}</span><span class="plus">+</span><span class="boite">${groupeSvg(image, b)}</span></div>`,
             choices: choix.map((k) => choixNombre(k)), answer: choix.indexOf(a + b) };
         }),
@@ -388,12 +393,12 @@ const CP_COMPTER = {
 const CP_SENS = [["voir", "yeux"], ["entendre", "oreille"], ["sentir les odeurs", "nez"], ["goûter", "bouche"], ["toucher", "main"]];
 const CP_VIVANTS = ["chat", "lapin", "poisson", "souris", "hibou", "tortue", "cheval", "lion", "arbre"];
 const CP_OBJETS = ["robot", "velo", "ballon", "voiture", "moto", "avion", "table", "lit", "fusee", "livre"];
-const CP_FRUITS = ["pomme", "orange", "banane", "ananas"];
+const CP_FRUITS = ["pomme", "orange", "banane", "ananas", "melon"];
 const CP_LEGUMES = ["carotte", "radis", "salade"];
 /* Sciences : le corps, le vivant, les plantes (ces chapitres étaient dans « Le monde » : mêmes
    identifiants, l'élève garde ses étoiles), et la matière (l'aimant, ce qui flotte ou qui coule) */
-const CP_AIMANT = { oui: ["clou", "trombone", "conserve"], non: ["plume", "ballon", "livre", "pomme", "bol", "table"] };
-const CP_EAU = { flotte: ["ballon", "plume", "pomme"], coule: ["cle", "cuillere", "clou", "cailloux"] };
+const CP_AIMANT = { oui: ["clou", "trombone", "conserve"], non: ["plume", "ballon", "livre", "pomme", "bol", "table", "bonbon", "savon", "tasse", "pain", "chapeau", "gateau", "carotte", "jupe"] };
+const CP_EAU = { flotte: ["ballon", "plume", "pomme", "bateau", "orange"], coule: ["cle", "cuillere", "clou", "cailloux", "trombone", "conserve"] };
 const CP_SCIENCES = {
   id: "sciences", name: "Sciences", color: "#d4691e",
   chapters: [
@@ -427,10 +432,18 @@ const CP_SCIENCES = {
           return { type: "img", consigne: "Clique sur ce dont la plante a besoin pour pousser.", prompt: "", choices: choix.map((n) => carte(n)), answer: choix.indexOf(bon) };
         }),
           lesson: { rule: ["Pour pousser, une plante a besoin d'<b>eau</b> et de <b>soleil</b>.", "Sans eau, elle a soif et ses feuilles tombent. Sans lumière, elle devient toute pâle."], ex: "J'arrose ma plante et je la mets près de la fenêtre." } },
-        { id: "w3-2", title: "De la graine à la fleur", bank: CP.serie(() => ({
-          type: "suite-images", consigne: "Remets les images dans l'ordre : qu'est-ce qui vient en premier ?",
-          images: CP.un([["graine", "pousse", "fleur"], ["graine", "pousse", "arbre"]]),
-        })),
+        { id: "w3-2", title: "De la graine à la fleur", bank: CP.serie(() => {
+          const fin = CP.un(["fleur", "arbre"]);
+          if (Math.random() < 0.5) return { type: "suite-images", consigne: "Remets les images dans l'ordre : qu'est-ce qui vient en premier ?", images: ["graine", "pousse", fin] };
+          /* une question sur une seule étape, pour ne pas toujours ranger la même suite */
+          const [consigne, bon, faux] = CP.un([
+            ["Qu'est-ce qu'on met dans la terre pour faire pousser une plante ?", "graine", ["clou", "bonbon", "cailloux", "trombone"]],
+            ["Qu'est-ce qui sort de la graine, juste après ?", "pousse", [fin, "cailloux", "clou"]],
+            [`Que devient la petite pousse quand elle grandit ?`, fin, ["graine", "cailloux", "bol"]],
+          ]);
+          const choix = shuffle([bon, ...CP.plusieurs(faux, 2)]);
+          return { type: "img", consigne, prompt: "", choices: choix.map((n) => carte(n)), answer: choix.indexOf(bon) };
+        }),
           lesson: { rule: ["On plante une <b>graine</b> dans la terre et on l'arrose.", "Une petite <b>pousse</b> sort de la terre, puis elle grandit et fait une <b>fleur</b>."], ex: "graine → pousse → fleur" } },
         { id: "w3-3", title: "Grand arbre ou petite plante ?", bank: CP.serie(() => ({
           type: "tri", consigne: "Range chaque image : un grand arbre, ou une petite plante ?", paniers: ["grand arbre", "petite plante"],
@@ -443,7 +456,8 @@ const CP_SCIENCES = {
       id: "s1", title: "La matière et les objets", picto: "aimant", color: "#d4691e", lessons: [
         { id: "s1-1", title: "L'aimant attire ou pas ?", bank: CP.serie(() => ({
           type: "tri", consigne: "Range chaque image : l'aimant l'attire, ou il ne l'attire pas.", paniers: ["l'aimant l'attire", "il ne l'attire pas"],
-          objets: [...CP.plusieurs(CP_AIMANT.oui, 3).map((n) => [n, 0]), ...CP.plusieurs(CP_AIMANT.non, 3).map((n) => [n, 1])],
+          /* 2 ou 3 objets en fer : la réponse ne se devine pas au nombre d'images */
+          objets: ((k) => [...CP.plusieurs(CP_AIMANT.oui, k).map((n) => [n, 0]), ...CP.plusieurs(CP_AIMANT.non, 6 - k).map((n) => [n, 1])])(CP.entre(2, 3)),
         })),
           lesson: { rule: ["L'<b>aimant</b> attire les objets en <b>fer</b> : le clou, le trombone, la boîte de conserve.", "Il n'attire pas le bois, le papier, le plastique ni les fruits."], ex: "l'aimant attire le clou ; il n'attire pas la plume" } },
         { id: "s1-2", title: "Flotte ou coule ?", bank: CP.serie(() => ({
@@ -482,9 +496,15 @@ const CP_TEMPS = {
           return { type: "img", consigne: question, prompt: "", choices: cartes, answer: choix.indexOf(bon) };
         }),
           lesson: { rule: ["Une journée commence le <b>matin</b>, quand le soleil se lève.", "Puis vient le <b>midi</b>, puis le <b>soir</b>, quand le soleil se couche, et enfin la <b>nuit</b>."], ex: "matin → midi → soir → nuit" } },
-        { id: "t1-2", title: "Dans l'ordre de la journée", bank: CP.serie(() => ({
-          type: "suite-images", consigne: "Remets la journée dans l'ordre : qu'est-ce qui vient en premier ?", images: ["matin", "midi", "soir", "nuit"],
-        }), 5),
+        { id: "t1-2", title: "Dans l'ordre de la journée", bank: CP.serie(() => {
+          const ordre = CP_MOMENTS.map((m) => m[0]);
+          if (Math.random() < 0.35) return { type: "suite-images", consigne: "Remets la journée dans l'ordre : qu'est-ce qui vient en premier ?", images: ordre.slice() };
+          /* juste avant, juste après : la journée n'est plus toujours la même suite à ranger */
+          const apres = Math.random() < 0.5, i = apres ? CP.entre(0, 2) : CP.entre(1, 3), bon = ordre[apres ? i + 1 : i - 1];
+          const { choix, cartes } = cartesChoix(bon, ordre.filter((x) => x !== ordre[i]));
+          return { type: "img", consigne: `Qu'est-ce qui vient juste ${apres ? "après" : "avant"} ${CP_MOMENTS[i][1]} ?`,
+            prompt: `<div class="groupes"><span class="boite">${picto(ordre[i], 110)}</span></div>`, choices: cartes, answer: choix.indexOf(bon) };
+        }, 6),
           lesson: { rule: ["Le matin vient en premier, la nuit à la fin.", "Après la nuit, un nouveau matin commence !"], ex: "matin → midi → soir → nuit" } },
       ],
     },
@@ -637,9 +657,12 @@ function sceneAnimal(animal, meuble, ou, t = 180) {
   return `<svg class="picto" width="${t}" height="${t}" viewBox="0 0 100 100" aria-hidden="true"><path d="M2 96 H98" stroke="#2b2236" stroke-width="3" stroke-linecap="round"/>${m}<g transform="${a}">${PICTOS[animal]}</g></svg>`;
 }
 const sceneAvec = (qui, quoi, t = 180) => `<svg class="picto" width="${t}" height="${t}" viewBox="0 0 100 100" aria-hidden="true"><g transform="translate(0 14) scale(.58)">${PICTOS[qui]}</g><g transform="translate(52 34) scale(.46)">${PICTOS[quoi]}</g></svg>`;
-const CP_ANIMAUX_PHRASE = [["chat", "Le chat"], ["poule", "La poule"], ["vache", "La vache"]];
+const CP_ANIMAUX_PHRASE = [["chat", "Le chat"], ["poule", "La poule"], ["vache", "La vache"], ["mouton", "Le mouton"], ["cheval", "Le cheval"],
+  ["cochon", "Le cochon"], ["tortue", "La tortue"], ["loup", "Le loup"], ["renard", "Le renard"]];
 const CP_LIEUX_PHRASE = [["table", "sur", "sur la table"], ["table", "sous", "sous la table"], ["lit", "sur", "sur le lit"]];
-const CP_OBJETS_PHRASE = [["bonbon", "un bonbon"], ["ballon", "un ballon"], ["domino", "un domino"], ["tasse", "une tasse"], ["melon", "un melon"], ["jupe", "une jupe"]];
+const CP_OBJETS_PHRASE = [["bonbon", "un bonbon"], ["ballon", "un ballon"], ["domino", "un domino"], ["tasse", "une tasse"], ["melon", "un melon"], ["jupe", "une jupe"],
+  ["velo", "un vélo"], ["moto", "une moto"], ["tomate", "une tomate"], ["savon", "un savon"], ["chemise", "une chemise"], ["radis", "un radis"]];
+const CP_QUI_PHRASE = [["bebe", "Le bébé"], ["robot", "Le robot"]];
 function questionPhrase() {
   if (Math.random() < 0.6) {
     const [an, anTxt] = CP.un(CP_ANIMAUX_PHRASE), lieu = CP.un(CP_LIEUX_PHRASE);
@@ -649,12 +672,15 @@ function questionPhrase() {
       choices: scenes.map(([a, l]) => ({ svg: sceneAnimal(a, l[0], l[1]), cls: "carte", aria: "Une image" })), answer: scenes.findIndex((x) => x[2]) };
   }
   const [obj, objTxt] = CP.un(CP_OBJETS_PHRASE), autres = CP.plusieurs(CP_OBJETS_PHRASE.filter((x) => x[0] !== obj), 2).map((x) => x[0]);
-  const choix = shuffle([obj, ...autres]);
-  return { type: "lis-phrase", consigne: "Lis la phrase, puis clique sur la bonne image.", phrase: `Le bébé a ${objTxt}.`,
-    choices: choix.map((o) => ({ svg: sceneAvec("bebe", o), cls: "carte", aria: "Une image" })), answer: choix.indexOf(obj) };
+  const choix = shuffle([obj, ...autres]), [qui, quiTxt] = CP.un(CP_QUI_PHRASE);
+  return { type: "lis-phrase", consigne: "Lis la phrase, puis clique sur la bonne image.", phrase: `${quiTxt} a ${objTxt}.`,
+    choices: choix.map((o) => ({ svg: sceneAvec(qui, o), cls: "carte", aria: "Une image" })), answer: choix.indexOf(obj) };
 }
 const CP_PHRASES_DICTEE = [["Le", "chat", "est", "sur", "le", "lit."], ["La", "poule", "est", "sous", "la", "table."], ["Le", "bébé", "a", "un", "bonbon."],
-  ["Le", "mouton", "est", "sur", "le", "tapis."], ["La", "vache", "a", "une", "tasse."]];
+  ["Le", "mouton", "est", "sur", "le", "tapis."], ["La", "vache", "a", "une", "tasse."], ["Le", "loup", "est", "sous", "le", "lit."],
+  ["Le", "cheval", "a", "une", "salade."], ["Le", "robot", "a", "un", "vélo."], ["La", "tortue", "est", "sur", "la", "table."],
+  ["Le", "renard", "a", "une", "tomate."], ["Le", "cochon", "est", "dans", "la", "boue."], ["Le", "bébé", "a", "une", "jupe."],
+  ["Le", "chat", "a", "un", "domino."], ["La", "moto", "est", "sur", "le", "tapis."]];
 
 /* les dessins des nombres : la barrette de 10, des images barrées, deux dés pareils, la maison du 10, des crayons */
 function barretteSvg(image, n) {
@@ -772,7 +798,7 @@ const CP_DICTEE_P2 = [
       }),
         lesson: { rule: ["<b>est</b> s'écrit avec un <b>s</b> et un <b>t</b> qu'on n'entend pas.", "<b>sur</b>, <b>sous</b>, <b>dans</b>, <b>avec</b> : on les apprend par cœur."], ex: "Le chat <b>est</b> <b>sur</b> le lit." } },
       { id: "d3-4", title: "J'écris la phrase", bank: CP.serie(() => {
-        const unites = CP.un(CP_PHRASES_DICTEE), autres = ["sur", "sous", "un", "une", "le", "la", "est"].filter((x) => !unites.includes(x));
+        const unites = CP.un(CP_PHRASES_DICTEE), autres = ["sur", "sous", "dans", "un", "une", "le", "la", "est", "a"].filter((x) => !unites.includes(x));
         return { type: "dictee-etiquettes", consigne: "Écoute la phrase, puis écris-la avec les étiquettes de mots.", mot: unites.join(" "), unites, sep: " ",
           intrus: CP.plusieurs(autres, 2) };
       }, 6),
@@ -786,7 +812,7 @@ const CP_COMPTER_P2 = [
     id: "c5", periode: 2, title: "Les nombres jusqu'à 20", picto: "n15", color: "#1f6fbf", lessons: [
       { id: "c5-1", title: "Compter jusqu'à 20", bank: CP.serie(() => {
         const [image, pluriel] = CP.un(CP_A_COMPTER), n = CP.entre(11, 20), choix = nombresAutour(n, 10, 20);
-        return { type: "img", consigne: `Combien y a-t-il de ${pluriel} ? La boîte jaune en contient toujours dix.`, prompt: `<div class="groupes">${barretteSvg(image, n)}</div>`,
+        return { type: "img", consigne: `Combien y a-t-il ${deNom(pluriel)} ? La boîte jaune en contient toujours dix.`, prompt: `<div class="groupes">${barretteSvg(image, n)}</div>`,
           choices: choix.map((k) => choixNombre(k)), answer: choix.indexOf(n) };
       }),
         lesson: { rule: ["Pour compter beaucoup d'objets, on fait un paquet de <b>dix</b>.", "Puis on continue à partir de dix : onze, douze, treize…"], ex: "dix et trois → <b>treize</b> (13)" } },
@@ -822,14 +848,14 @@ const CP_COMPTER_P2 = [
       }),
         lesson: { rule: ["Pour faire 10, on compte les cases vides.", "7 et 3 font 10 ; 6 et 4 font 10 ; 5 et 5 font 10."], ex: "7 pommes → il en manque <b>3</b>" } },
       { id: "c6-3", title: "Retirer : combien en reste-t-il ?", bank: CP.serie(() => {
-        const [image, pluriel] = CP.un(CP_A_COMPTER), n = CP.entre(3, 10), r = CP.entre(1, n - 1), choix = nombresAutour(n - r, 0, 10);
-        return { type: "img", consigne: `Il y avait ${NOMS_NOMBRES[n]} ${pluriel}. On en enlève ${NOMS_NOMBRES[r]}. Combien en reste-t-il ?`, prompt: `<div class="groupes"><span class="boite">${groupeBarre(image, n, r)}</span></div>`,
+        const [image, pluriel, fem] = CP.un(CP_A_COMPTER), n = CP.entre(3, 10), r = CP.entre(1, n - 1), choix = nombresAutour(n - r, 0, 10);
+        return { type: "img", consigne: `Il y avait ${nbNom(n, fem)} ${pluriel}. On en enlève ${nbNom(r, fem)}. Combien en reste-t-il ?`, prompt: `<div class="groupes"><span class="boite">${groupeBarre(image, n, r)}</span></div>`,
           choices: choix.map((x) => choixNombre(x)), answer: choix.indexOf(n - r) };
       }),
         lesson: { rule: ["Quand on <b>retire</b>, il en reste moins.", "On compte seulement les images qui ne sont pas barrées."], ex: "6 pommes, on en enlève 2 → il en reste <b>4</b>" } },
       { id: "c6-4", title: "Ajouter ou retirer ?", bank: CP.serie(() => {
-        const [image, pluriel] = CP.un(CP_A_COMPTER), [qui, pr] = CP.un(CP_HISTOIRES), gagne = Math.random() < 0.5, a = CP.entre(2, 6), b = CP.entre(1, 3);
-        const histoire = gagne ? `${qui} a ${NOMS_NOMBRES[a]} ${pluriel}. Boulon lui en donne ${NOMS_NOMBRES[b]}.` : `${qui} a ${NOMS_NOMBRES[a + b]} ${pluriel}. ${pr === "il" ? "Il" : "Elle"} en perd ${NOMS_NOMBRES[b]}.`;
+        const [image, pluriel, fem] = CP.un(CP_A_COMPTER), [qui, pr] = CP.un(CP_HISTOIRES), gagne = Math.random() < 0.5, a = CP.entre(2, 6), b = CP.entre(1, 3);
+        const histoire = gagne ? `${qui} a ${nbNom(a, fem)} ${pluriel}. Boulon lui en donne ${nbNom(b, fem)}.` : `${qui} a ${nbNom(a + b, fem)} ${pluriel}. ${pr === "il" ? "Il" : "Elle"} en perd ${nbNom(b, fem)}.`;
         return { type: "img", consigne: `${histoire} ${qui} en a-t-${pr} plus, ou moins ? On ajoute, ou on retire ?`, prompt: "",
           choices: [{ cls: "jour", text: "+ On ajoute", dire: "On ajoute", aria: "On ajoute" }, { cls: "jour", text: "− On retire", dire: "On retire", aria: "On retire" }], answer: gagne ? 0 : 1 };
       }),
@@ -839,15 +865,17 @@ const CP_COMPTER_P2 = [
   {
     id: "c7", periode: 2, title: "Problèmes et longueurs", picto: "crayon-9", color: "#3a5fa8", lessons: [
       { id: "c7-1", title: "Petits problèmes", bank: CP.serie(() => {
-        const [image, pluriel] = CP.un(CP_A_COMPTER), [qui, pr] = CP.un(CP_HISTOIRES), gagne = Math.random() < 0.5;
+        const [image, pluriel, fem, mange] = CP.un(CP_A_COMPTER), [qui, pr] = CP.un(CP_HISTOIRES), gagne = Math.random() < 0.5;
         if (gagne) {
           const a = CP.entre(1, 6), b = CP.entre(1, Math.min(4, 10 - a)), choix = nombresAutour(a + b, 1, 10);
-          return { type: "img", consigne: `${qui} a ${NOMS_NOMBRES[a]} ${a > 1 ? pluriel : motDe(image)}. Boulon lui en donne ${NOMS_NOMBRES[b]}. Combien en a-t-${pr} maintenant ?`,
+          return { type: "img", consigne: `${qui} a ${nbNom(a, fem)} ${a > 1 ? pluriel : motDe(image)}. Boulon lui en donne ${nbNom(b, fem)}. Combien en a-t-${pr} maintenant ?`,
             prompt: `<div class="groupes"><span class="boite">${groupeSvg(image, a)}</span><span class="plus">+</span><span class="boite">${groupeSvg(image, b)}</span></div>`,
             choices: choix.map((k) => choixNombre(k)), answer: choix.indexOf(a + b) };
         }
         const n = CP.entre(3, 10), r = CP.entre(1, n - 1), choix = nombresAutour(n - r, 0, 10);
-        return { type: "img", consigne: `${qui} a ${NOMS_NOMBRES[n]} ${pluriel}. ${pr === "il" ? "Il" : "Elle"} en mange ${NOMS_NOMBRES[r]}. Combien lui en reste-t-il ?`,
+        /* on ne mange que ce qui se mange : sinon on en perd, ou on en donne à Boulon */
+        const verbe = mange ? `en mange ${nbNom(r, fem)}` : CP.un([`en perd ${nbNom(r, fem)}`, `en donne ${nbNom(r, fem)} à Boulon`]);
+        return { type: "img", consigne: `${qui} a ${nbNom(n, fem)} ${pluriel}. ${pr === "il" ? "Il" : "Elle"} ${verbe}. Combien lui en reste-t-il ?`,
           prompt: `<div class="groupes"><span class="boite">${groupeBarre(image, n, r)}</span></div>`, choices: choix.map((k) => choixNombre(k)), answer: choix.indexOf(n - r) };
       }),
         lesson: { rule: ["Écoute bien l'histoire : on en reçoit (on ajoute), ou on en perd (on retire) ?", "Regarde les images pour t'aider."], ex: "j'ai 5 bonbons, j'en mange 2 → il en reste <b>3</b>" } },
